@@ -1,0 +1,227 @@
+2025-06-09 00:03:20,955 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:03:20,958 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:03:20,958 - root - ERROR - Error processing request: object MagicMock can't be used in 'await' expression
+2025-06-09 00:03:20,959 - root - INFO - Response: 500 in 0.0044s (ID: )
+2025-06-09 00:03:20,959 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 500 Internal Server Error"
+2025-06-09 00:06:57,537 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:06:57,544 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:06:57,544 - root - ERROR - Error processing request: object MagicMock can't be used in 'await' expression
+2025-06-09 00:06:57,545 - root - INFO - Response: 500 in 0.0079s (ID: )
+2025-06-09 00:06:57,545 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 500 Internal Server Error"
+2025-06-09 00:08:08,866 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:08:08,868 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:08:08,869 - root - ERROR - Error processing request: object MagicMock can't be used in 'await' expression
+2025-06-09 00:08:08,870 - root - INFO - Response: 500 in 0.0037s (ID: )
+2025-06-09 00:08:08,870 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 500 Internal Server Error"
+2025-06-09 00:09:11,372 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:09:11,373 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:09:11,374 - root - ERROR - Error processing request: object MagicMock can't be used in 'await' expression
+2025-06-09 00:09:11,374 - root - INFO - Response: 500 in 0.0022s (ID: )
+2025-06-09 00:09:11,375 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 500 Internal Server Error"
+2025-06-09 00:11:09,181 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:11:09,182 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:11:09,182 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:11:09,183 - root - INFO - Response: 200 in 0.0035s (ID: )
+2025-06-09 00:11:09,183 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:12:16,685 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:16,687 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:12:16,687 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:12:16,687 - root - INFO - Response: 200 in 0.0019s (ID: )
+2025-06-09 00:12:16,688 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:12:49,285 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:49,288 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:12:49,289 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:12:49,289 - root - INFO - Response: 200 in 0.0038s (ID: )
+2025-06-09 00:12:49,290 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:12:49,300 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:49,301 - root - INFO - Processing question from test-user: What is the capital of France?
+2025-06-09 00:12:49,302 - root - INFO - Response generated for test-user (ID: test-123)
+2025-06-09 00:12:49,302 - root - INFO - Response: 200 in 0.0018s (ID: )
+2025-06-09 00:12:49,302 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:12:49,399 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:49,401 - root - INFO - Response: 422 in 0.0017s (ID: )
+2025-06-09 00:12:49,401 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:12:49,402 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:49,402 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:12:49,402 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:12:49,402 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:12:49,402 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:12:49,402 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:12:49,414 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:12:49,414 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:12:49,417 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:12:49,426 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:12:49,427 - root - INFO - Response: 200 in 0.0010s (ID: )
+2025-06-09 00:12:49,429 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:14:02,564 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:14:02,564 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:14:02,566 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:14:02,566 - root - INFO - Response: 200 in 0.0021s (ID: )
+2025-06-09 00:14:02,567 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:14:02,572 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:14:02,572 - root - INFO - Processing question from test-user: What is the capital of France?
+2025-06-09 00:14:02,572 - root - INFO - Response generated for test-user (ID: test-123)
+2025-06-09 00:14:02,578 - root - INFO - Response: 200 in 0.0053s (ID: )
+2025-06-09 00:14:02,578 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:14:02,672 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:14:02,672 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:14:02,676 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:14:02,677 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:14:02,678 - root - INFO - Response: 422 in 0.0010s (ID: )
+2025-06-09 00:14:02,678 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:14:02,679 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:14:02,680 - root - INFO - Response: 422 in 0.0014s (ID: )
+2025-06-09 00:14:02,680 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:14:02,687 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:14:02,690 - root - INFO - Response: 200 in 0.0031s (ID: )
+2025-06-09 00:14:02,691 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:14:02,698 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:14:02,702 - root - INFO - Response: 200 in 0.0040s (ID: )
+2025-06-09 00:14:02,703 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:15:16,441 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:15:16,442 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:15:16,442 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:15:16,444 - root - INFO - Response: 200 in 0.0027s (ID: )
+2025-06-09 00:15:16,445 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:15:16,475 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:15:16,476 - root - INFO - Processing question from test-user: What is the capital of France?
+2025-06-09 00:15:16,477 - root - INFO - Response generated for test-user (ID: test-123)
+2025-06-09 00:15:16,478 - root - INFO - Response: 200 in 0.0028s (ID: )
+2025-06-09 00:15:16,479 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:15:16,637 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:15:16,641 - root - INFO - Response: 422 in 0.0039s (ID: )
+2025-06-09 00:15:16,642 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:15:16,642 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:15:16,645 - root - INFO - Response: 422 in 0.0030s (ID: )
+2025-06-09 00:15:16,645 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:15:16,646 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:15:16,648 - root - INFO - Response: 422 in 0.0015s (ID: )
+2025-06-09 00:15:16,648 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:15:16,659 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:15:16,662 - root - INFO - Response: 200 in 0.0027s (ID: )
+2025-06-09 00:15:16,662 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:15:16,670 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:15:16,672 - root - INFO - Response: 200 in 0.0015s (ID: )
+2025-06-09 00:15:16,672 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:17:15,195 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:17:15,198 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:17:15,198 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:17:15,198 - root - INFO - Response: 200 in 0.0031s (ID: )
+2025-06-09 00:17:15,198 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:17:15,209 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:17:15,211 - root - INFO - Processing question from test-user: What is the capital of France?
+2025-06-09 00:17:15,211 - root - INFO - Response generated for test-user (ID: test-123)
+2025-06-09 00:17:15,211 - root - INFO - Response: 200 in 0.0021s (ID: )
+2025-06-09 00:17:15,212 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:17:15,332 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:17:15,336 - root - INFO - Response: 422 in 0.0040s (ID: )
+2025-06-09 00:17:15,337 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:17:15,340 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:17:15,342 - root - INFO - Response: 422 in 0.0018s (ID: )
+2025-06-09 00:17:15,344 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:17:15,346 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:17:15,346 - root - INFO - Response: 422 in 0.0004s (ID: )
+2025-06-09 00:17:15,348 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:17:15,357 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:17:15,359 - root - INFO - Response: 200 in 0.0024s (ID: )
+2025-06-09 00:17:15,361 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:17:15,380 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:17:15,380 - root - INFO - Response: 200 in 0.0020s (ID: )
+2025-06-09 00:17:15,380 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:18:41,948 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:18:41,948 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:18:41,948 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:18:41,948 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:18:41,955 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:18:42,079 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:18:42,081 - root - INFO - Response: 422 in 0.0020s (ID: )
+2025-06-09 00:18:42,081 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:18:42,081 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:18:42,081 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:18:42,086 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:18:42,087 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:18:42,090 - root - INFO - Response: 422 in 0.0033s (ID: )
+2025-06-09 00:18:42,091 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:18:42,098 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:18:42,098 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:18:42,098 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:18:42,107 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:18:42,109 - root - INFO - Response: 200 in 0.0025s (ID: )
+2025-06-09 00:18:42,112 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:20:03,030 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:20:03,030 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:20:03,030 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:20:03,030 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:20:03,030 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:20:03,046 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:20:03,048 - root - INFO - Processing question from test-user: What is the capital of France?
+2025-06-09 00:20:03,049 - root - INFO - Response generated for test-user (ID: test-123)
+2025-06-09 00:20:03,049 - root - INFO - Response: 200 in 0.0036s (ID: )
+2025-06-09 00:20:03,049 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:20:03,233 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:20:03,236 - root - INFO - Response: 422 in 0.0021s (ID: )
+2025-06-09 00:20:03,236 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:20:03,238 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:20:03,240 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:20:03,240 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:20:03,242 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:20:03,243 - root - INFO - Response: 422 in 0.0003s (ID: )
+2025-06-09 00:20:03,244 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:20:03,255 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:20:03,257 - root - INFO - Response: 200 in 0.0015s (ID: )
+2025-06-09 00:20:03,258 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:20:03,268 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:20:03,270 - root - INFO - Response: 200 in 0.0018s (ID: )
+2025-06-09 00:20:03,271 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:22:05,510 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:22:05,511 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:22:05,511 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:22:05,511 - root - INFO - Response: 200 in 0.0015s (ID: )
+2025-06-09 00:22:05,513 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:22:05,523 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:22:05,523 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:22:05,523 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:22:05,643 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:22:05,644 - root - INFO - Response: 422 in 0.0013s (ID: )
+2025-06-09 00:22:05,645 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:22:05,645 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:22:05,645 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:22:05,648 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:22:05,650 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:22:05,651 - root - INFO - Response: 422 in 0.0010s (ID: )
+2025-06-09 00:22:05,651 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:22:05,657 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:22:05,657 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:22:05,662 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:22:05,669 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:22:05,670 - root - INFO - Response: 200 in 0.0009s (ID: )
+2025-06-09 00:22:05,672 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:24:00,887 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,887 - root - INFO - Processing question from test-sender-456: What is the meaning of life?
+2025-06-09 00:24:00,887 - root - INFO - Response generated for test-sender-456 (ID: test-question-123)
+2025-06-09 00:24:00,887 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:24:00,890 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 200 OK"
+2025-06-09 00:24:00,902 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,903 - root - INFO - Response: 422 in 0.0014s (ID: )
+2025-06-09 00:24:00,903 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:24:00,904 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,908 - root - INFO - Response: 401 in 0.0037s (ID: )
+2025-06-09 00:24:00,909 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 401 Unauthorized"
+2025-06-09 00:24:00,913 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,916 - root - INFO - Response: 401 in 0.0024s (ID: )
+2025-06-09 00:24:00,916 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 401 Unauthorized"
+2025-06-09 00:24:00,927 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,927 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:24:00,929 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:24:00,930 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,930 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:24:00,932 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:24:00,933 - root - INFO - Request: POST http://testserver/ask-llm/ from unknown (ID: )
+2025-06-09 00:24:00,933 - root - INFO - Response: 422 in 0.0000s (ID: )
+2025-06-09 00:24:00,935 - httpx - INFO - HTTP Request: POST http://testserver/ask-llm/ "HTTP/1.1 422 Unprocessable Entity"
+2025-06-09 00:24:00,943 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:24:00,945 - root - INFO - Response: 200 in 0.0020s (ID: )
+2025-06-09 00:24:00,946 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+2025-06-09 00:24:00,954 - root - INFO - Request: GET http://testserver/health from unknown (ID: )
+2025-06-09 00:24:00,954 - root - INFO - Response: 200 in 0.0000s (ID: )
+2025-06-09 00:24:00,958 - httpx - INFO - HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"

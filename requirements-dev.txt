@@ -1,0 +1,20 @@
+# Development Dependencies
+-r requirements.txt  # Include all production dependencies
+
+# Code Quality
+black==24.2.0
+isort==5.13.2
+flake8==7.0.0
+mypy==1.8.0
+pre-commit==3.6.0
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.5.3
+
+# Development Server
+watchfiles==0.21.0  # For auto-reload
+
+# Testing (basic)
+pytest==7.4.4
+pytest-asyncio==0.23.5
