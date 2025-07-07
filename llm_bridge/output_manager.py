@@ -26,8 +26,11 @@ class OutputManager:
             'is_guest': original_json.get('sender_id', '').startswith('guest_')
         }
         
+        # Get response content, checking both 'response' and 'answer' fields
+        response_content = response_obj.get('response') or response_obj.get('answer', '')
+        
         output_json = {
-            'response': response_obj.get('response', ''),
+            'response': response_content,
             'vibe_used': original_json.get('vibe', 'general'),  
             'question_id': original_json.get('question_id'),
             'sender_id': original_json.get('sender_id'),
@@ -62,7 +65,7 @@ class OutputManager:
             save_record(
                 user_id=original_json.get('sender_id'),
                 question=initial_prompt,
-                answer=response_obj.get('response', ''),
+                answer=response_obj.get('response', '') or response_obj.get('answer', ''),
                 model=response_obj.get('llm_used', 'unknown'),
                 confidence=response_obj.get('confidence'),
                 tokens=response_obj.get('token_count', None),

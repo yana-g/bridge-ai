@@ -6,17 +6,20 @@ from pathlib import Path
 import requests
 import logging
 import uuid
-from chatUI import chat_page
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent.parent
+sys.path.append(str(project_root))
+
+# Now import local modules
+from api.userHandler import create_user, verify_user
+from ui.chat.chatUI import chat_page
 
 st.set_page_config(
     page_title="BRIDGE",
     page_icon="🌉",
     layout="centered"
 )
-
-# Add parent directory to path to import userHandler
-sys.path.append(str(Path(__file__).parent.parent))
-from api.userHandler import create_user, verify_user
 
 # API configuration
 API_BASE_URL = "http://localhost:8000"
@@ -41,7 +44,7 @@ def login_page():
     
     # Check if we should show the chat
     if st.session_state.get('show_chat', False):
-        from chatUI import main as chat_main
+        from ui.chat.chatUI import main as chat_main
         chat_main()
         return
     

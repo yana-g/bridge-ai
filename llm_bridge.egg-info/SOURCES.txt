@@ -13,4 +13,6 @@ api/tests/test_core.py
 llm_bridge.egg-info/PKG-INFO
 llm_bridge.egg-info/SOURCES.txt
 llm_bridge.egg-info/dependency_links.txt
+llm_bridge.egg-info/entry_points.txt
+llm_bridge.egg-info/requires.txt
 llm_bridge.egg-info/top_level.txt
