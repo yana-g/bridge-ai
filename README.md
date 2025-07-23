@@ -122,35 +122,40 @@ streamlit run ui/loginUI.py
 ## 📚 Project Structure
 
 ```
-BRIDGE_v2.2/
+BRIDGE_v2.2.1/
 ├── api/                    # API implementation
 │   ├── __init__.py
 │   ├── entry_point_api.py  # Main API endpoints
 │   ├── authHandler.py      # Authentication logic
 │   ├── userHandler.py      # User management
-│   └── middleware/         # Request processing middleware
+│   ├── middleware/         # Request processing middleware
+│   ├── logs/              # API logs
+│   └── tests/             # API test suite
 │
-├── llm_bridge/            # Core routing logic
+├── llm_bridge/            # Core routing and processing logic
 │   ├── __init__.py
 │   ├── bridge.py          # Main orchestrator
 │   ├── llm_router.py      # Model routing
 │   ├── prompt_analyzer.py # Prompt analysis
+│   ├── prompt_enhancer.py # Prompt enhancement
 │   ├── answer_evaluator.py # Response evaluation
+│   ├── response_classifier.py # Response classification
 │   ├── cache_manager.py   # Caching system
-│   └── output_manager.py  # Response formatting
+│   ├── output_manager.py  # Response formatting
+│   └── test/             # Test suite
 │
 ├── data_layer/            # Data persistence
 │   ├── __init__.py
-│   ├── mongoHandler.py    # MongoDB operations
-│   └── models/            # Data models
+│   └── mongoHandler.py    # MongoDB operations
 │
 ├── ui/                    # Web interface
-│   ├── loginUI.py         # Authentication UI
-│   ├── chatUI.py          # Chat interface
-│   └── static/            # Frontend assets
+│   ├── chat/             # Chat interface components
+│   ├── dashboard/        # Dashboard components
+│   ├── static/           # Frontend assets
+│   └── __init__.py
 │
-├── tests/                 # Test suite
-├── .env.example          # Example environment config
+├── cache/                # Cache storage
+├── logs/                 # Application logs
 └── requirements.txt      # Python dependencies
 ```
 
@@ -273,5 +278,3 @@ This project was built with ❤️ as part of a collaborative effort by a talent
 - Semantic search using [Sentence Transformers](https://www.sbert.net/)
 - MongoDB for persistence and vector-based caching
 - Icons by [Feather Icons](https://feathericons.com/)
-
-Specia
