@@ -1,5 +1,44 @@
-# bridge.py - Updated with simple, friendly response logic and language detection
+# bridge.py - Core LLM Bridge Implementation
 
+"""
+LLM Bridge - Intelligent Query Routing and Processing System
+
+This module implements the core LLMBridge class that serves as the central orchestrator
+for processing natural language queries through a pipeline of specialized components.
+
+The LLMBridge handles:
+1. Initial query analysis and preprocessing
+2. Semantic caching and response retrieval
+3. Dynamic model selection and routing
+4. Response quality evaluation
+5. Follow-up question generation
+6. Output formatting and delivery
+
+Key Components:
+- PromptAnalyzer: Determines query intent and requirements
+- LLMRouter: Selects appropriate LLM based on query characteristics
+- AnswerEvaluator: Assesses response quality and suggests improvements
+- CacheManager: Handles response caching and retrieval
+- OutputManager: Formats and structures final responses
+
+Example Usage:
+    bridge = LLMBridge(config={
+        'use_cache': True,
+        'check_informativeness': True
+    })
+    
+    response = bridge.process_request({
+        'prompt': 'Explain quantum computing',
+        'vibe': 'Academic/Research',
+        'sender_id': 'user123',
+        'confidence': True,
+        'nature_of_answer': 'Detailed'
+    })
+"""
+
+import re
+import requests
+from urllib.parse import quote_plus
 from llm_bridge.cache_manager import LocalCacheManager
 from llm_bridge.prompt_analyzer import PromptAnalyzer
 from llm_bridge.response_classifier import ResponseTypeClassifier
@@ -9,13 +48,47 @@ from llm_bridge.answer_evaluator import AnswerEvaluator
 from llm_bridge.output_manager import OutputManager
 
 class LLMBridge:
+    """
+    Main orchestrator for processing natural language queries through the LLM pipeline.
+    
+    The LLMBridge coordinates between various components to:
+    1. Analyze incoming prompts for intent and requirements
+    2. Check for cached responses before processing
+    3. Route queries to appropriate LLM models
+    4. Evaluate and enhance response quality
+    5. Generate follow-up questions when needed
+    6. Format and return final responses
+    
+    Attributes:
+        config (dict): Configuration parameters for the bridge
+        cache_manager (LocalCacheManager): Handles response caching
+        prompt_analyzer (PromptAnalyzer): Analyzes prompt complexity and requirements
+        response_classifier (ResponseTypeClassifier): Classifies response types
+        prompt_enhancer (PromptEnhancer): Enhances prompts for better LLM responses
+        llm_router (LLMRouter): Routes queries to appropriate LLM models
+        answer_evaluator (AnswerEvaluator): Evaluates response quality
+        output_manager (OutputManager): Formats and structures final responses
+        use_cache (bool): Whether to use response caching
+        check_informativeness (bool): Whether to check response informativeness
+    """
+    
     def __init__(self, config=None):
+        """
+        Initialize the LLMBridge with optional configuration.
+        
+        Args:
+            config (dict, optional): Configuration dictionary. May include:
+                - use_cache (bool): Enable/disable response caching
+                - check_informativeness (bool): Enable/disable response quality checks
+                - cache_ttl (int): Cache time-to-live in seconds
+                - max_cache_size (int): Maximum number of cache entries
+        """
         self.config = config or {}
         self.cache_manager = LocalCacheManager()
         self.prompt_analyzer = PromptAnalyzer()
         self.response_classifier = ResponseTypeClassifier()
         self.prompt_enhancer = PromptEnhancer()
-        self.llm_router = LLMRouter()
+        self.llm_router = LLMRouter(cache_manager=self.cache_manager)  # Pass cache manager to router
         self.answer_evaluator = AnswerEvaluator()
         self.output_manager = OutputManager(self.cache_manager)
         
@@ -25,10 +98,27 @@ class LLMBridge:
         self.check_informativeness = self.config.get('check_informativeness', True)
 
     def process_request(self, request_json):
+        """
+        Process a natural language query through the LLM pipeline.
+        
+        Args:
+            request_json (dict): Request data containing the query prompt and other metadata
+        
+        Returns:
+            dict: Final response object containing the answer, metadata, and other relevant information
+        """
         print("\n=== Starting LLMBridge.process_request ===")
         prompt = request_json.get('prompt', '')
         print(f"Processing prompt: {prompt}")
         
+        # Step 0: Try handling direct math expressions
+        math_expr = self.prompt_analyzer.extract_math_expression(prompt)
+        if math_expr:
+            print(f"Detected math expression: {math_expr}")
+            result = self._handle_math_expression(math_expr, request_json)
+            if result:
+                return result
+
         # Step 1: Check for simple intents that Bridge can handle directly
         simple_response = self._handle_simple_intents(prompt, request_json)
         if simple_response:
@@ -38,22 +128,45 @@ class LLMBridge:
         # Step 2: Check cache first (if enabled)
         if self.use_cache:
             print("\n--- Checking cache ---")
-            cached_response, found = self.cache_manager.search(prompt)
-            print(f"Cache search - found: {found}, cached_response: {bool(cached_response)}")
+            cached_response, match_type, similarity = self.cache_manager.search(prompt)
+            print(f"Cache search - match_type: {match_type}, cached_response: {cached_response is not None}")
             
-            if found and 'final_output' in cached_response:
-                print("Serving from cache")
-                print(f"Cached response: {cached_response['final_output']}")
-                return {
-                    'response': cached_response['final_output']['response'],
-                    'model_metadata': {
-                        'llm_used': 'cache',
+            if match_type in ['exact', 'semantic', 'mongo'] and cached_response:
+                cache_source = 'mongo' if match_type == 'mongo' else 'local'
+                print(f"Serving from {cache_source} cache (match type: {match_type}, similarity: {similarity:.2f})")
+                
+                # Handle different response formats from different cache sources
+                if match_type == 'mongo':
+                    # MongoDB returns the full record with question/answer in root
+                    response_text = cached_response.get('answer', '')
+                    model_metadata = cached_response.get('metadata', {})
+                    model_metadata.update({
+                        'llm_used': f'cache_{cache_source}',
+                        'cache_match_type': match_type,
+                        'cache_similarity': similarity,
                         'from_cache': True,
                         'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                    })
+                    return {
+                        'response': response_text,
+                        'model_metadata': model_metadata
                     }
-                }
-            else:
-                print("No valid cache entry found, proceeding with LLM processing")
+                else:
+                    # Local cache has response in final_output
+                    if 'final_output' in cached_response:
+                        print(f"Cached response: {cached_response['final_output']}")
+                        return {
+                            'response': cached_response['final_output']['response'],
+                            'model_metadata': {
+                                'llm_used': f'cache_{cache_source}',
+                                'cache_match_type': match_type,
+                                'cache_similarity': similarity,
+                                'from_cache': True,
+                                'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                            }
+                        }
+            
+            print("No valid cache entry found, proceeding with LLM processing")
         else:
             print("Cache disabled, proceeding directly to LLM processing")
 
@@ -61,7 +174,15 @@ class LLMBridge:
         return self._full_bridge_process(prompt, request_json)
 
     def _detect_non_english(self, prompt):
-        """Detect if prompt is in a non-English language using langdetect"""
+        """
+        Detect if the prompt is in a non-English language using langdetect.
+        
+        Args:
+            prompt (str): Input prompt to check
+        
+        Returns:
+            bool: True if the prompt is likely in a non-English language, False otherwise
+        """
         try:
             # Fast path
             if any(ord(char) > 127 for char in prompt):
@@ -84,7 +205,15 @@ class LLMBridge:
             return False
 
     def _handle_non_english_intent(self, prompt):
-        """Handle non-English prompts with a polite response"""
+        """
+        Handle non-English prompts with a polite response.
+        
+        Args:
+            prompt (str): Input prompt to handle
+        
+        Returns:
+            dict: Response object with a polite message and metadata
+        """
         return {
             'response': "I notice you've written in a language other than English. I'm designed to work in English only. Could you please rephrase your question in English? I'm here to help! 🌍",
             'model_metadata': {
@@ -97,14 +226,41 @@ class LLMBridge:
         }
 
     def _handle_simple_intents(self, prompt, request_json):
-        """Handle simple intents that don't require LLM processing"""
+        """
+        Handle simple intents that don't require LLM processing.
         
+        Args:
+            prompt (str): Input prompt to check
+            request_json (dict): Request data containing the query prompt and other metadata
+        
+        Returns:
+            dict: Response object with a direct response and metadata, or None if no simple intent is detected
+        """
+    
         # First check for non-English
         if self._detect_non_english(prompt):
             response = self._handle_non_english_intent(prompt)
             response['model_metadata']['is_guest'] = request_json.get('sender_id', '').startswith('guest_')
             return response
-        
+
+        # Check if this is a math expression
+        if self._is_math_expression(prompt):
+            cleaned_expr, result = self._evaluate_math_expression(prompt)
+
+            # basis of the response
+            response_text = f"{cleaned_expr} = {result}"
+
+            return {
+                'response': response_text,
+                'model_metadata': {
+                    'llm_used': 'mathjs-api',
+                    'confidence': 1.0,
+                    'simple_intent': 'math_expression',
+                    'from_cache': False,
+                    'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                }
+        }
+
         # Then check for other simple intents
         intent = self._detect_simple_intent(prompt)
         
@@ -121,9 +277,20 @@ class LLMBridge:
                         'is_guest': request_json.get('sender_id', '').startswith('guest_')
                     }
                 }
+
         return None
 
+
     def _detect_simple_intent(self, prompt):
+        """
+        Detect simple intents in the input prompt.
+        
+        Args:
+            prompt (str): Input prompt to check
+        
+        Returns:
+            str: Detected simple intent, or None if no simple intent is detected
+        """
         prompt_lower = prompt.lower().strip()
         words = prompt_lower.split()
         
@@ -172,7 +339,16 @@ class LLMBridge:
         return None
 
     def _get_simple_response(self, intent, prompt):
-        """Generate appropriate responses for simple intents with smart selection"""
+        """
+        Generate a simple response for the detected intent.
+        
+        Args:
+            intent (str): Detected simple intent
+            prompt (str): Input prompt
+        
+        Returns:
+            str: Simple response text, or None if no response is generated
+        """
         prompt_lower = prompt.lower()
         
         # Define response criteria with better organization
@@ -252,7 +428,16 @@ Simple questions get quick responses, complex ones get deep analysis.<br><br>
         return None
 
     def _full_bridge_process(self, prompt, request_json):
-        """Full Bridge logic (existing functionality)"""
+        """
+        Run the full Bridge processing pipeline for the input prompt.
+        
+        Args:
+            prompt (str): Input prompt to process
+            request_json (dict): Request data containing the query prompt and other metadata
+        
+        Returns:
+            dict: Final response object containing the answer, metadata, and other relevant information
+        """
         print("Running full Bridge processing...")
         
         # Check if we need more information - made much less strict for better flow
@@ -303,3 +488,102 @@ Simple questions get quick responses, complex ones get deep analysis.<br><br>
         
         print(f"Final output from bridge: {output}")
         return output
+
+    def _handle_math_expression(self, expr, request_json):
+        """
+        Handle a math expression evaluated via Math.js.
+        
+        Args:
+            expr (str): Math expression to evaluate
+            request_json (dict): Request data containing the query prompt and other metadata
+        
+        Returns:
+            dict: Response object containing the evaluated result and metadata
+        """
+        try:
+            response = requests.get("https://api.mathjs.org/v4/", params={"expr": expr})
+            if response.status_code == 200:
+                result = response.text.strip()
+                return {
+                'response': f"{expr} = {result}",
+                'model_metadata': {
+                    'llm_used': 'mathjs-api',
+                    'confidence': 1.0,
+                    'simple_intent': 'math_expression',
+                    'from_cache': False,
+                    'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                }
+            }
+            else:
+                return {
+                    'response': f"⚠️ Sorry, I couldn't compute: {expr}",
+                    'model_metadata': {
+                        'llm_used': 'mathjs-api',
+                        'confidence': 0.0,
+                        'simple_intent': 'math_expression',
+                        'from_cache': False,
+                        'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                    }
+                }
+        except Exception as e:
+            return {
+                'response': f"⚠️ Error: {str(e)}",
+                'model_metadata': {
+                    'llm_used': 'mathjs-api',
+                    'confidence': 0.0,
+                'simple_intent': 'math_expression',
+                'from_cache': False,
+                'is_guest': request_json.get('sender_id', '').startswith('guest_')
+                }
+            }
+
+
+    def _is_math_expression(self, prompt):
+        """
+        Check if the input prompt is a math expression that can be computed using Math.js.
+        
+        Args:
+            prompt (str): Input prompt to check
+        
+        Returns:
+            bool: True if the prompt is a math expression, False otherwise
+        """
+        expr = self._clean_math_expression(prompt)
+        try:
+            response = requests.get("https://api.mathjs.org/v4/", params={"expr": expr})
+            return response.status_code == 200
+        except:
+            return False
+
+    def _clean_math_expression(self, prompt):
+        """
+        Clean the input prompt to extract a math expression.
+        
+        Args:
+            prompt (str): Input prompt to clean
+        
+        Returns:
+            str: Cleaned math expression
+        """
+        # Remove = or ? from the end
+        return re.sub(r'[=\?]+$', '', prompt.strip())
+    
+    def _evaluate_math_expression(self, prompt):
+        """
+        Evaluate a math expression using Math.js.
+        
+        Args:
+            prompt (str): Input prompt containing a math expression
+        
+        Returns:
+            tuple: (Cleaned math expression, evaluated result)
+        """
+        expr = self._clean_math_expression(prompt)
+        try:
+            response = requests.get("https://api.mathjs.org/v4/", params={"expr": expr})
+            if response.status_code == 200:
+                return expr, response.text.strip()
+            else:
+                return expr, "❌ Invalid expression"
+        except Exception as e:
+            return expr, f"⚠️ Error evaluating math: {str(e)}"

@@ -7,6 +7,7 @@ from datetime import datetime
 import time
 import asyncio
 from streamlit.runtime.scriptrunner import add_script_run_ctx
+import re
 
 API_BASE_URL = "http://localhost:8000"
 
@@ -26,18 +27,79 @@ def load_css():
         st.error(f"Error loading CSS: {str(e)}")
         print(f"Error loading CSS: {str(e)}")
 
+def escape_html(text):
+    """Escape HTML special characters for safe rendering."""
+    return (str(text)
+            .replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+            .replace('"', '&quot;'))
+
+def format_code_blocks(text):
+    """Convert Markdown-style code blocks and inline code into styled HTML."""
+    
+    if not isinstance(text, str):
+        text = str(text)
+
+    # code blocks (```...```    
+    def block_replacer(match):
+        code = match.group(1).strip()
+        return (
+            '<div class="code-block"><pre><code>'
+            + escape_html(code)
+            + '</code></pre></div>'
+        )
+
+    text = re.sub(
+        r'```(?:[\w\-+]*\n)?(.*?)```',
+        block_replacer,
+        text,
+        flags=re.DOTALL
+    )
+
+    # code inline (`...`)
+    text = re.sub(
+        r'(?<!`)`([^`\n]+?)`(?!`)',
+        r'<code>\1</code>',
+        text
+    )
+
+    return text
+
 def send_message(question: str, vibe: str, nature_of_answer: str, confidence: bool = True) -> dict:
+    """Send a message to the LLM API and return the response.
+    
+    Args:
+        question: The question to ask the LLM
+        vibe: The vibe to use for the question
+        nature_of_answer: The nature of the answer to expect
+        confidence: Whether to include confidence in the response
+    
+    Returns:
+        dict: The response from the LLM API
+"""
     try:
         # Get values from session state with defaults
         api_key = st.session_state.get('api_key', 'guest_key')
         username = st.session_state.get('username', 'guest_user')
         
+        # Debug log
+        print(f"\n=== Sending request to /ask-llm/ ===")
+        print(f"API Key: {api_key}")
+        print(f"Username: {username}")
+        
         # Prepare headers with the values from session state
         headers = {
             "Content-Type": "application/json",
-            "x-api-key": str(api_key),
-            "x-username": str(username)
+            "X-API-Key": str(api_key),
+            "X-Username": str(username)
         }
+        print(f"Headers: {headers}")
+        
+        # For logged-in users, ensure we have a valid API key
+        if not st.session_state.get('is_guest', True) and (not api_key or api_key == 'guest_key'):
+            print("Error: Invalid session - no API key for logged-in user")
+            return {"response": "Error: Invalid session. Please log in again."}
         
         payload = {
             "vibe": vibe,
@@ -47,89 +109,108 @@ def send_message(question: str, vibe: str, nature_of_answer: str, confidence: bo
             "confidence": confidence,
             "nature_of_answer": nature_of_answer
         }
+        print(f"Payload: {payload}")
         
         response = requests.post(
             f"{API_BASE_URL}/ask-llm/", 
             json=payload, 
-            headers=headers
+            headers=headers,
+            timeout=30
         )
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
         
         if response.status_code == 200:
             return response.json()
         else:
-            return {"response": f"Error {response.status_code}: {response.text}"}
+            print(f"Error response: {response.text}")
+            return {"response": f"Error: {response.status_code} - {response.text}"}
             
     except requests.exceptions.RequestException as e:
+        print(f"Connection error: {str(e)}")
         return {"response": f"Connection error: {str(e)}"}
     except Exception as e:
+        print(f"Exception in send_message: {str(e)}")
         return {"response": f"An error occurred: {str(e)}"}
 
 def render_chat_messages():
+    """Render the chat messages in the UI."""   
     if not st.session_state.get('chat_history'):
         st.markdown(''' ''', unsafe_allow_html=True)
-    else:
-        for message in st.session_state.chat_history:
-            if message["role"] == "user":
+        return
+        
+    for message in st.session_state.chat_history:
+        if message["role"] == "user":
+            content = format_code_blocks(message["content"])
+            st.markdown(f'''
+                <div class="chat-message user-message">
+                    <div class="message-content">{content}</div>
+                    <div class="message-time">{message.get("timestamp", "")}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        else:
+            # Get model info and confidence from message data
+            model_metadata = message.get("model_metadata", {})
+            model_name = model_metadata.get("llm_used", "Bridge AI").upper()
+            
+            # If model is unknown, use BRIDGE AI
+            if model_name.lower() == "unknown":
+                model_name = "BRIDGE"
+
+            # Try to get confidence from metadata first, then from response text
+            confidence = model_metadata.get("confidence")
+            if confidence is None and "Confidence score:" in message["content"]:
+                try:
+                    # Extract confidence from response text (e.g., "...Confidence score: 1.")
+                    confidence_str = message["content"].split("Confidence score:")[1].strip().split()[0].rstrip('., ')
+                    confidence = float(confidence_str)
+                except (IndexError, ValueError):
+                    pass
+
+            confidence_display = f"Confidence: {int(confidence * 100)}%" if confidence is not None else "N/A"
+            content = format_code_blocks(message["content"])
+            
+            if message.get("is_streaming"):
                 st.markdown(f'''
-                    <div class="chat-message user-message">
-                        <div class="message-content">{message["content"]}</div>
+                    <div class="chat-message ai-message">
+                        <div class="message-header">
+                            <div class="model-info">
+                                <span class="model-name">{model_name}</span>
+                                <span class="confidence-score">• {confidence_display}</span>
+                            </div>                          
+                        </div>
+                        <div class="message-content">
+                            {content}<span style="animation: blink 1s infinite; color: #666;">▌</span>
+                        </div>
                         <div class="message-time">{message.get("timestamp", "")}</div>
                     </div>
                 ''', unsafe_allow_html=True)
             else:
-                # Get model info and confidence from message data
-                model_metadata = message.get("model_metadata", {})
-                model_name = model_metadata.get("llm_used", "Bridge AI").upper()
-
-                # If model is unknown, use BRIDGE AI
-                if model_name.lower() == "unknown":
-                    model_name = "BRIDGE"
-
-                # Try to get confidence from metadata first, then from response text
-                confidence = model_metadata.get("confidence")
-                if confidence is None and "Confidence score:" in message["content"]:
-                    try:
-                        # Extract confidence from response text (e.g., "...Confidence score: 1.")
-                        confidence_str = message["content"].split("Confidence score:")[1].strip().split()[0].rstrip('., ')
-                        confidence = float(confidence_str)
-                    except (IndexError, ValueError):
-                        pass
-
-                confidence_display = f"Confidence: {int(confidence * 100)}%" if confidence is not None else "N/A"
-            
-                if message.get("is_streaming"):
-                    st.markdown(f'''
-                        <div class="chat-message ai-message">
-                            <div class="message-header">
-                                <div class="model-info">
-                                    <span class="model-name">{model_name}</span>
-                                    <span class="confidence-score">• {confidence_display}</span>
-                                </div>                          
-                            </div>
-                            <div class="message-content">
-                                {message["content"]}<span style="animation: blink 1s infinite; color: #666;">▌</span>
-                            </div>
-                            <div class="message-time" style="margin-left: auto;">{message.get("timestamp", "")}</div>
+                st.markdown(f'''
+                    <div class="chat-message ai-message">
+                        <div class="message-header">
+                            <div class="model-info">
+                                <span class="model-name">{model_name}</span>
+                                <span class="confidence-score">• {confidence_display}</span>
+                            </div>                          
                         </div>
-                    ''', unsafe_allow_html=True)
-                else:
-                    st.markdown(f'''
-                        <div class="chat-message ai-message">
-                            <div class="message-header">
-                                <div class="model-info">
-                                    <span class="model-name">{model_name}</span>
-                                    <span class="confidence-score">• {confidence_display}</span>
-                                </div>                          
-                            </div>
-                            <div class="message-content">{message["content"]}</div>
-                            <div class="message-time" style="margin-left: auto;">{message.get("timestamp", "")}</div>
-                        </div>
-                    ''', unsafe_allow_html=True)
+                        <div class="message-content">{content}</div>
+                        <div class="message-time">{message.get("timestamp", "")}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
 
 def chat_page():
-    # Initialize session state
+    """Render the chat page."""
+    # Check if user is logged in or is a guest
+    if not st.session_state.get('logged_in'):
+        st.query_params.clear()
+        st.rerun()
+        return
+
+    # Initialize session state with defaults if they don't exist
     st.session_state.setdefault('is_guest', True)
-    st.session_state.setdefault('logged_in', True)
+												  
     st.session_state.setdefault('username', f"guest_{str(uuid.uuid4())[:8]}")
     st.session_state.setdefault('chat_history', [])
     st.session_state.setdefault('form_key', str(uuid.uuid4()))
@@ -140,6 +221,28 @@ def chat_page():
     
     # Load CSS
     load_css()
+
+    # Create sidebar with user info and logout button
+    with st.sidebar:
+        # User info and logout button in a single row
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown(f'''
+                <div class="sidebar-username">
+                    @{st.session_state.username}
+                </div>
+            ''', unsafe_allow_html=True)
+        with col2:
+            # Simple logout form that redirects to login page
+            st.markdown('''
+                <form action="loginUI.py" method="get">
+                    <input type="hidden" name="logout" value="true">
+                    <button type="submit" class="logout-link">Logout</button>
+                </form>
+            ''', unsafe_allow_html=True)
+        
+        # Add some space
+        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
     # Create HTML layout - everything EXCEPT the footer
     st.markdown('''
@@ -233,9 +336,9 @@ def chat_page():
                     if response and 'response' in response:
                         # Process the response...
                         model_metadata = response.get('model_metadata', {})
-                        print("\n=== DEBUG: Model Metadata ===")
-                        print(model_metadata)
-                        print("=== End of Model Metadata ===\n")
+                        # print("\n=== DEBUG: Model Metadata ===")
+                        # print(model_metadata)
+                        # print("=== End of Model Metadata ===\n")
                         
                         model_name = model_metadata.get("llm_used", "Bridge AI").upper()
                         if model_name.lower() == "unknown":

@@ -24,8 +24,12 @@ wheels/
 venv/
 env/
 ENV/
-.env
 .venv
+
+# Environment variables
+.env
+.env.*
+!.env.example
 
 # IDE specific files
 .idea/
@@ -35,32 +39,106 @@ ENV/
 *~
 .DS_Store
 
+# Logs
+*.log
+logs/
+
+# Local development
+*.local
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Logs and databases
-*.log
-*.sql
-*.sqlite
+# MongoDB
+data/
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Local development settings
-local_settings.py
-
-# Cache and local directories
-.cache/
+# Python cache
+.mypy_cache/
 .pytest_cache/
+
+# Local configuration overrides
+config/local.py
+
+# API keys and secrets
+*_key.pem
+*_cert.pem
+*.pem
+
+# Large model files
+*.bin
+*.h5
+*.pt
+*.pth
+
+# Streamlit
+.streamlit/
+
+# Testing
 .coverage
 htmlcov/
+.pytest_cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+config.py  # If it contains sensitive info
+
+# Local development overrides
+local_settings.py
+
+# API logs
+api/logs/*
+!api/logs/.gitkeep
+
+# Cache directories
+.cache/
+__pycache__/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# Visual Studio Code specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual environment
+venv/
+ENV/
 
 # Distribution / packaging
 .Python
-*.manifest
-*.spec
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Unit test / coverage reports
 htmlcov/
@@ -80,40 +158,58 @@ coverage.xml
 *.mo
 *.pot
 
-# Sphinx documentation
-docs/_build/
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
 
-# PyCharm
-.idea/
-
-# VS Code
-.vscode/
-*.code-workspace
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Project specific
-/cache/
-/logs/
-*.pkl
-*.pth
-*.h5
-*.hdf5
-*.pt
-*.pth
-*.bin
-*.safetensors
-
-# Local development
+# Flask stuff:
 instance/
 .webassets-cache
 
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
 
 # mypy
 .mypy_cache/
@@ -123,12 +219,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# PyCharm
-.idea/
+# pytype static type analyzer
+.pytype/
 
-# VS Code
-.vscode/
-*.code-workspace
-
-# Environment files (except example)
-!.env.example
+# Cython debug symbols
+cython_debug/

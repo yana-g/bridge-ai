@@ -17,7 +17,7 @@ from ui.chat.chatUI import chat_page
 
 st.set_page_config(
     page_title="BRIDGE",
-    page_icon="🌉",
+    page_icon="🌐",
     layout="centered"
 )
 
@@ -39,14 +39,18 @@ def load_css():
         st.error(f"Error loading CSS: {e}")
 
 def login_page():
-    """Render the login page."""
-    load_css()
+    # Handle logout
+    if st.query_params.get("logout"):
+        st.session_state.clear()
+        st.query_params.clear()
+        st.rerun()
     
-    # Check if we should show the chat
-    if st.session_state.get('show_chat', False):
-        from ui.chat.chatUI import main as chat_main
-        chat_main()
-        return
+    # If already logged in, redirect to chat
+    if st.session_state.get('logged_in'):
+        st.query_params["page"] = "chat"
+        st.rerun()
+    
+    load_css()
     
     st.markdown("<div class='login-container'>", unsafe_allow_html=True)
     st.markdown("<h1 class='welcome-text'>Welcome to BRIDGE</h1>", unsafe_allow_html=True)
@@ -65,16 +69,20 @@ def login_page():
                 st.error("Please enter both username and password")
             else:
                 with st.spinner("Signing in..."):
-                    success, result = asyncio.run(handle_login(username, password))
+                    success, message, result = asyncio.run(handle_login(username, password))
                     if success:
-                        st.session_state['api_key'] = result
-                        st.session_state['logged_in'] = True
-                        st.session_state['username'] = username
-                        st.session_state['is_guest'] = False
-                        st.session_state['chat_history'] = []  # Reset chat history on new login
-                        redirect_to_chat()
+                        st.session_state.clear()
+                        st.session_state.update({
+                            'api_key': result['api_key'],
+                            'logged_in': True,
+                            'username': result['username'],
+                            'is_guest': False,
+                            'chat_history': []
+                        })
+                        st.query_params["page"] = "chat"
+                        st.rerun()
                     else:
-                        st.error(f"Login failed: {format_error_message(result)}")
+                        st.error(message)
     
     st.markdown("<div class='signup-prompt'>Don't have an account?</div>", unsafe_allow_html=True)
     
@@ -86,12 +94,19 @@ def login_page():
     
     with col2:
         if st.button("Continue as Guest", key="guest_login_btn", use_container_width=True, type="secondary"):
-            st.session_state['logged_in'] = True
-            st.session_state['is_guest'] = True
-            st.session_state['username'] = f"guest_{str(uuid.uuid4())[:8]}"  # Generate a random guest ID
-            st.session_state['chat_history'] = []  # Initialize empty chat history
-            print("Continuing as guest user")  # Debug log
-            redirect_to_chat()
+            # Clear any existing session state
+            st.session_state.clear()
+            # Set guest session state
+            st.session_state.update({
+                'logged_in': True,
+                'is_guest': True,
+                'username': f"guest_{str(uuid.uuid4())[:8]}",
+                'chat_history': [],
+                'api_key': "guest_key"
+            })
+            # Use st.experimental_set_query_params for navigation
+            st.query_params["page"] = "chat"
+            st.rerun()
     
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -133,31 +148,46 @@ def signup_page():
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-async def handle_login(username: str, password: str) -> tuple[bool, str]:
-    """Handle user login."""
+async def handle_login(username: str, password: str) -> tuple[bool, str, dict]:
+    """Handle user login.
+    
+    Args:
+        username: Username or email
+        password: User's password
+        
+    Returns:
+        tuple: (success: bool, message: str, data: dict) where data contains api_key and username if successful
+    """
     try:
         response = requests.post(
             f"{API_BASE_URL}/users/login",
             json={"username": username, "password": password}
         )
         
-        print(f"Login response status: {response.status_code}")  # Debug log
-        print(f"Login response: {response.text}")  # Debug log
-        
-        if response.status_code == 200:
+        try:
             data = response.json()
-            # Check both possible response formats
-            if data.get("access_token"):
-                return True, data["access_token"]  # If using JWT
-            elif data.get("api_key"):
-                return True, data["api_key"]  # If using API key directly
-            return False, "Invalid response format from server"
-            
-        return False, f"Login failed: {response.text}"
-        
+            if data.get("success") is True and data.get("user"):
+                return True, "Login successful", {
+                    "api_key": data["user"].get("api_key"),
+                    "username": data["user"].get("username")
+                }
+            elif data.get("user") and data["user"].get("api_key"):
+                return True, "Login successful", {
+                    "api_key": data["user"]["api_key"],
+                    "username": data["user"].get("username")
+                }
+            elif "detail" in data:
+                return False, data["detail"], {}
+                
+        except ValueError:
+            if response.status_code == 200:
+                return False, "Invalid response format from server", {}
+            else:
+                return False, f"Login failed with status {response.status_code}", {}
+                
     except Exception as e:
         logging.error(f"Login error: {str(e)}", exc_info=True)
-        return False, f"An error occurred: {str(e)}"
+        return False, f"An error occurred during login: {str(e)}", {}
 
 async def handle_signup(username: str, password: str, email: str = "") -> tuple[bool, str]:
     """Handle user signup."""
@@ -220,15 +250,32 @@ def main():
         st.session_state.is_guest = False
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
+    if 'show_chat' not in st.session_state:
+        st.session_state.show_chat = False
     
     # Configure logging
     logging.basicConfig(level=logging.INFO)
     
-    # Show the appropriate page
-    if st.session_state.get('logged_in', False):
+    # Check if we should show chat or login
+    query_params = st.query_params
+    
+    # If user is trying to access chat but not logged in, redirect to login
+    if query_params.get("page") == ["chat"] and not st.session_state.get('logged_in'):
+        st.query_params.clear()
+        st.rerun()
+        return
+        
+    # If user is logged in, show chat
+    if query_params.get("page") == ["chat"] or st.session_state.get('logged_in'):
+        from chatUI import chat_page
         chat_page()
-    elif st.session_state.get('show_signup', False):
+    # If user is logging out
+    elif query_params.get("page") == ["login"]:
+        login_page()
+    # Show signup page if that's what was requested
+    elif st.session_state.get('show_signup'):
         signup_page()
+    # Default to login page
     else:
         login_page()
 

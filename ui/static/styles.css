@@ -59,7 +59,7 @@
 
 /* Chat message styles */
 .chat-message {
-    max-width: 75%;
+    max-width: 85%;
     padding: 1rem;
     border-radius: 1rem;
     font-size: 0.9375rem;
@@ -73,7 +73,6 @@
 .user-message {
     align-self: flex-end !important;
     margin-left: auto !important;
-    margin-right: 0 !important;
     background-color: #e0ecff;
     border-color: #c2d8ff;
     text-align: right;  
@@ -97,21 +96,13 @@
     flex-wrap: wrap !important;
 }
 
-.message-header > span:first-child {
-    font-weight: 600;
-    color: #333;
-}
-
-.message-header > span:not(:last-child)::after {
-    content: "|";
-    margin-left: 0.5rem;
-    color: #ccc;
-}
-
 .message-content {
-    word-wrap: break-word;
     white-space: pre-line !important;
-    line-height: 1.2;
+    line-height: 1.4;
+    margin-bottom: 0.1rem;
+    word-wrap: break-word;
+    overflow: visible;
+    padding-bottom: 0;      /* Remove any padding */
 }
 
 .message-time {
@@ -121,14 +112,52 @@
     margin-top: 0.25rem;
 }
 
-.vibe-badge,
-.confidence-badge {
-    background: none;
-    color: #666;
-    padding: 0;
-    margin: 0;
-    font-size: 0.75rem;
-    font-weight: normal;
+.follow-up-section {
+    margin-top: -1.5rem;  /* Increased from -0.75rem */
+    padding-top: 0.1rem;  /* Reduced from 0.25rem */
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.follow-up-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 0.15rem 0;  
+}
+
+.follow-up-header {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.15rem;  
+    font-weight: 500;
+}
+
+.follow-up-list {
+    margin: 0.15rem 0 0 0;  
+    padding-left: 1rem;
+    list-style-type: none;
+}
+
+.follow-up-list li {
+    margin: 0.4rem 0;
+    color: #2b6cb0;
+    font-size: 0.9rem;
+    position: relative;
+    padding-left: 1.25rem;
+}
+
+.follow-up-list li:before {
+    content: "•";
+    color: #4a90e2;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.follow-up-list li:hover {
+    color: #1a4b8c;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 /* Form styling */
@@ -141,43 +170,14 @@
     padding: 20px !important;
     z-index: 9999 !important;
     border-top: 1px solid #e0e0e0 !important;
-    max-width: 100% !important;
+
+    display: flex !important;
+    justify-content: center !important;
 }
 
 .stForm > div {
-    background: transparent !important;
-    border: none !important;
-}
-
-.stForm > div > div {
-    background: transparent !important;
-    border: none !important;
-}
-
-/* Text area styling */
-.stTextArea {
-    height: 30px !important;
-    margin-top: -8px !important;
-    margin-bottom: 4px !important;
-    background: transparent !important;
-    padding-left: 0px !important;
-    margin-left: 0 !important;
-}
-
-.stTextArea,
-.stTextArea > div,
-.stTextArea > div > div,
-.stTextArea > div > div > div {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-.stTextArea label,
-.stTextArea > label {
-    background: transparent !important;
+    width: 100%;
+    max-width: 700px;
 }
 
 .stTextArea > div > div > textarea {
@@ -186,171 +186,117 @@
     border: 1px solid #d1d5db !important;
     padding: 12px 20px !important;
     font-size: 14px !important;
-    background-color: transparent !important;
-    outline: none !important;
     resize: none !important;
-}
-
-.stTextArea > div > div > textarea:focus,
-.stTextArea > div > div > textarea:active,
-.stTextArea > div > div > textarea:invalid,
-.stTextArea > div > div > textarea:required {
-    border-color: #9ca3af !important;
     outline: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-}
-
-.stTextArea > div > div > textarea::placeholder {
-    color: #9ca3af !important;
-}
-
-/* Selectboxes styling */
-.stSelectbox {
-    display: block !important;
-    margin-top: 5px !important;
-}
-
-.stSelectbox > div {
-    min-height: 32px !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.stSelectbox > div > div {
-    min-height: 32px !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.stSelectbox > div > div > div {
-    border: none !important;
-    background-color: #ffffff !important;
-    height: 20px !important;
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #6b7280 !important;
-    transition: all 0.15s ease !important;
-    box-shadow: none !important;
-    padding: 4px 8px !important;
-    min-height: 32px !important;
-    outline: none !important;
-}
-
-.stSelectbox > div > div > div:hover {
-    color: #374151 !important;
-}
-
-.stSelectbox > div > div > div:focus-within,
-.stSelectbox > div > div > div:focus {
-    color: #374151 !important;
-    box-shadow: none !important;
-    outline: none !important;
-    border: none !important;
-}
-
-.stSelectbox > div > div > div > div > svg {
-    color: #9ca3af !important;
-    width: 12px !important;
-    height: 12px !important;
-}
-
-.stSelectbox > div > div > div > div {
-    color: inherit !important;
-    font-weight: inherit !important;
-    font-size: 13px !important;
-    line-height: 1.3 !important;
-}
-
-/* Button styling */
-.stButton > button {
     width: 100% !important;
-    height: 20px !important;
-    border-radius: 50px !important;
-    background-color: #3260bd !important;
-    color: white !important;
-    font-weight: 300 !important;
-    padding: 0 !important;
-    border: none !important;
-    font-size: 14px !important;
+}
+
+/* Sidebar styles */
+[data-testid="stSidebar"] {
+    min-width: 80px !important;
+    max-width: 220px !important;
+    background: linear-gradient(180deg, #f8f9fb 0%, #e3e8ef 100%) !important;
+    border-right: 1px solid #e0e0e0 !important;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 6px rgba(0,0,0,0.03);
+}
+
+[data-testid="stSidebar"]:hover {
+    min-width: 220px !important;
+}
+
+/* Row with username + logout */
+.sidebar-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 12px;
+    gap: 0.5rem;
+    max-width: 100%;
+    flex-wrap: nowrap;
+}
+
+/* Username style with overflow protection */
+.sidebar-username {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+    max-width: 130px;
+}
+
+/* Logout link styled as underline text */
+.logout-link {
+    background: none;
+    border: none;
+    color: #4a6cf7;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.logout-link:hover {
+    color: #3a5bd9;
+    text-decoration: underline;
+}
+
+/* Fix hover flicker on st.button */
+.stButton > button {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #333;
+    transition: all 0.2s ease;
 }
 
 .stButton > button:hover {
-    background-color: #4b5563 !important;
-    margin-left: 50rem !important;
+    background-color: #f2f2f2;
+    border-color: #888;
+    color: #000;
 }
 
-/* Columns layout */
-.stColumns {
-    gap: 8px !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: end !important;
-    padding-left: 0 !important;
-    margin-left: 0 !important;
+/* === CODE BLOCKS === */
+.code-block {
+    background-color: #f4f4f4;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-family: "Courier New", monospace;
+    color: #2d2d2d;
+    white-space: pre;
+    margin-top: 0.5rem;
 }
 
-.stColumns > div {
-    padding: 0 !important;
-    margin-left: 0 !important;
+.code-block pre {
+    margin: 0;
+    white-space: pre;
 }
 
-.stColumns > div:first-child {
-    flex: 0 0 150px !important;
+.code-block code {
+    font-family: inherit;
+    background: none;
+    color: inherit;
+    padding: 0;
 }
 
-.stColumns > div:nth-child(2) {
-    flex: 0 0 100px !important;
-}
-
-.stColumns > div:nth-child(3) {
-    flex: 0 0 50px !important;
-    margin-left: auto !important;
-}
-
-/* Typing indicator */
-.typing-indicator {
-    display: flex;
-    gap: 0.5rem;
-    padding: 1rem;
-}
-
-.typing-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #4a6fa5;
-    border-radius: 50%;
-    opacity: 0.6;
-}
-
-
-/* Login page styles */
-.login-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 2rem;
-    text-align: center;
-}
-
-.welcome-text {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    color: #333;
-}
-
-.subtitle {
-    color: #666;
-    margin-bottom: 2rem;
-}
-
-.form-title {
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-.signup-prompt {
-    margin: 1.5rem 0;
-    color: #666;
+/* Inline code (`example`) */
+code {
+    background-color: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: "Courier New", monospace;
 }

@@ -74,13 +74,26 @@ async def verify_api_key(api_key: str) -> Optional[Dict[str, Any]]:
     if not api_key:
         return None
     
-    # Check if API key exists in the allowed keys
+    # First check the environment variable API_KEYS
     user = API_KEYS.get(api_key)
-    if not user:
-        return None
+    if user:
+        return {"username": user, "api_key": api_key}
     
-    # Return user information if needed
-    return {"username": user, "api_key": api_key}
+    # If not found in environment, check the database
+    try:
+        from data_layer.mongoHandler import db_handler
+        user_doc = db_handler.users.find_one({"api_key": api_key})
+        if user_doc:
+            return {
+                "username": user_doc.get("username"),
+                "api_key": api_key,
+                "email": user_doc.get("email"),
+                "id": str(user_doc.get("_id"))
+            }
+    except Exception as e:
+        logger.error(f"Error verifying API key in database: {str(e)}")
+    
+    return None
 
 async def get_user(request: Request) -> Dict[str, Any]:
     """Get the current user from the request."""

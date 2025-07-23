@@ -16,6 +16,9 @@ load_dotenv()
 ENV = os.getenv("ENV", "development")  # development / production / test
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
+DEV_MODE = ENV == "development"
+
+
 # === API Configuration ===
 API_CONFIG = {
     "title": "LLM Bridge API",

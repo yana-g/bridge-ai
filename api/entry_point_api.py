@@ -1,8 +1,49 @@
 """
-entry_point_api.py — Entry point API for LLM_Bridge (Decision Maker)
+entry_point_api.py — BRIDGE API Entry Point
 
-This FastAPI-based service receives structured question requests (including tone, style, and metadata)
-and routes them to a decision-making LLM engine via `run_llm()`.
+This module implements the main FastAPI application for the BRIDGE LLM routing system.
+It provides RESTful endpoints for user authentication, question processing, and system management.
+
+The API follows REST conventions and uses JWT for authentication. All responses are
+formatted as JSON and follow standard HTTP status codes.
+
+Key Features:
+- User authentication and API key management
+- Question processing with LLM routing
+- Request validation and error handling
+- Comprehensive logging and monitoring
+- CORS and security middleware
+
+Endpoints:
+    GET  /                   - API status and version
+    GET  /health             - Health check and system status
+    POST /register           - Register a new user
+    POST /login              - Authenticate and get API key
+    POST /ask-llm            - Process a question with the LLM
+    GET  /test-mongodb       - Test MongoDB connection (debug)
+
+Authentication:
+    All endpoints except /health and /register require an API key in the X-API-Key header.
+
+Example Usage:
+    # Get API status
+    curl http://localhost:8000/
+
+    # Register a new user
+    curl -X POST http://localhost:8000/register \
+         -H "Content-Type: application/json" \
+         -d '{"username":"test", "password":"password123", "email":"test@example.com"}'
+
+    # Get API key
+    curl -X POST http://localhost:8000/login \
+         -H "Content-Type: application/json" \
+         -d '{"username":"test", "password":"password123"}'
+
+    # Ask a question
+    curl -X POST http://localhost:8000/ask-llm \
+         -H "X-API-Key: your_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"vibe":"Technical/Development", "question":"Explain how to use FastAPI"}'
 """
 
 import os
@@ -23,7 +64,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends, status, Header
 from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import json
 
 # Import configuration and middleware
@@ -98,7 +139,7 @@ async def health_check():
 async def authenticate_entity(
     request: Request,
     x_api_key: str = Header(..., description="API key for authentication"),
-    x_username: Optional[str] = Header(..., description="Username for user authentication"),
+    x_username: Optional[str] = Header(None, description="Username for user authentication"),  # שונה מ-... ל-None
     x_agent_id: Optional[str] = Header(None, description="Agent ID for agent authentication")
 ) -> Dict[str, Any]:
     """
@@ -107,8 +148,8 @@ async def authenticate_entity(
     Args:
         request: The incoming request
         x_api_key: API key for authentication
-        x_username: Username for user authentication
-        x_agent_id: Agent ID for agent authentication
+        x_username: Username for user authentication (optional)
+        x_agent_id: Agent ID for agent authentication (optional)
         
     Returns:
         Dict containing entity information if authenticated
@@ -136,7 +177,7 @@ async def authenticate_entity(
                 detail="Invalid API key"
             )
             
-        # If we have a username, it's a user login
+        # If we have a username, verify it matches the API key
         if x_username and x_username != user.get("username"):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -166,7 +207,7 @@ async def authenticate_entity(
                 "permissions": ["read"]
             }
             
-        # If neither, it's an API key only authentication
+        # If neither username nor agent_id, it's an API key only authentication
         return {
             "type": "api_key",
             "id": user.get("username", "anonymous"),
@@ -243,6 +284,8 @@ class LLMResponse(BaseModel):
     question_id: str
     sender_id: str
     model_metadata: dict
+    follow_up_questions: Optional[List[str]] = None
+    needs_more_info: Optional[bool] = False
 
 # --- Middleware: Log every request to file and terminal ---
 @app.middleware("http")
@@ -444,7 +487,9 @@ async def ask_llm(
             vibe_used=request.vibe,
             question_id=request.question_id,
             sender_id=request.sender_id,
-            model_metadata=model_metadata
+            model_metadata=model_metadata,
+            follow_up_questions=response.get('follow_up_questions', None),
+            needs_more_info=response.get('needs_more_info', False)
         )
         
     except Exception as e:
@@ -473,6 +518,21 @@ def get_vibe_rating(vibe: Vibe) -> int:
         Vibe.CREATIVE_EMOTIONAL: 3
     }
     return vibe_ratings.get(vibe, 3)
+
+# --- Test MongoDB Connection Endpoint ---
+@app.get("/test-mongodb")
+async def test_mongodb():
+    """Test MongoDB connection and access."""
+    try:
+        # Test the connection
+        db_handler.test_connection()
+        return {"status": "success", "message": "MongoDB connection test passed!"}
+    except Exception as e:
+        logger.error(f"MongoDB test failed: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"MongoDB test failed: {str(e)}"}
+        )
 
 # --- Root endpoint ---
 @app.get("/")

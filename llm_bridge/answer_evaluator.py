@@ -1,7 +1,37 @@
-# answer_evaluator.py - Improved with better structure and evaluation criteria
+"""
+answer_evaluator.py - Response Quality Assessment Module
+
+This module implements the AnswerEvaluator class, which is responsible for:
+1. Evaluating the quality and completeness of LLM-generated responses
+2. Determining if a response meets quality thresholds
+3. Identifying when to upgrade to a more capable model
+4. Detecting common response issues (e.g., uncertainty, vagueness)
+5. Providing feedback on response quality
+
+Key Features:
+- Multi-dimensional quality assessment
+- Configurable quality thresholds
+- Model upgrade recommendations
+- Detailed quality scoring
+- Support for different response types
+"""
 
 class AnswerEvaluator:
+    """
+    Evaluates the quality of LLM-generated responses and determines if upgrades are needed.
+    
+    The AnswerEvaluator analyzes responses based on various quality indicators,
+    scores them, and decides whether a response meets the required quality standards.
+    It can recommend upgrading to a more capable model when responses are subpar.
+    
+    Attributes:
+        quality_indicators (dict): Positive and negative indicators of response quality
+        thresholds (dict): Quality thresholds for different assessment criteria
+        upgradeable_models (dict): Tracks which models can be upgraded
+    """
+    
     def __init__(self):
+        """Initialize the AnswerEvaluator with default quality indicators and thresholds."""
         # Organized quality indicators instead of simple list
         self.quality_indicators = {
             'negative': {
