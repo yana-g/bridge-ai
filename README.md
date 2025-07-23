@@ -1,4 +1,4 @@
-# 🌉 BRIDGE - Intelligent LLM Routing System v2.2
+# 🌐 BRIDGE - Intelligent LLM Routing System v2.2
 
 > An advanced AI routing system that intelligently directs user queries to the most appropriate language model based on complexity, context, and quality requirements.
 
@@ -38,6 +38,38 @@
    - Streamlit-based web interface
    - Responsive design for various devices
    - Real-time chat interface
+
+## 🔄 Routing Flow Overview
+
+This section illustrates the internal flow of query processing in the BRIDGE system — from the moment a user submits a question, through analysis, routing, and response generation.
+
+### 📈 Sequence Diagram
+
+```mermaid
+graph LR
+    A[User Query] --> B[Prompt Analyzer]
+    B --> C[Cache Manager]
+    B --> D[LLM Router]
+    C --> D
+    D --> E[Answer Evaluator]
+    E --> F[Output Manager]
+    F --> G[Streamlit UI]
+```
+### 🧭 Step-by-Step Flow
+
+1. ***User submits a query*** — including optional metadata such as vibe, confidence, or nature_of_answer.
+
+2. ***Prompt Analyzer (prompt_analyzer.py)*** determines the intent, complexity, and style of the input.
+
+3. ***Cache Manager (cache_manager.py)*** checks for matching or semantically similar cached responses to reduce unnecessary API calls.
+
+4. ***LLM Router (llm_router.py)*** selects the most appropriate model (e.g., GPT-3.5, GPT-4) based on the analysis.
+
+5. ***Answer Evaluator (answer_evaluator.py)*** assesses the generated response for quality, coherence, and alignment with expectations.
+
+6. ***Output Manager (output_manager.py)*** formats the final output (e.g., code blocks, follow-ups) and returns it to the UI.
+
+7. ***UI Display (Streamlit)*** renders the response in a real-time chat interface.
 
 ## 🛠 Installation & Setup
 
@@ -79,8 +111,7 @@
 
 ### Start the API Server
 ```bash
-export PYTHONPATH=$PWD
-python -m api.entry_point_api
+python -m uvicorn api.entry_point_api:app --reload --port 8000
 ```
 
 ### Start the Web UI
@@ -226,8 +257,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ using FastAPI and Streamlit
-- Powered by OpenAI's GPT models
-- Data persistence with MongoDB
-- Semantic search with Sentence Transformers
-- Icons by Feather Icons
+This project was built with ❤️ as part of a collaborative effort by a talented team of women developers and data scientists.
+
+### 👩‍💻 Team Members 
+- [**Shlomit Levavi**](https://www.linkedin.com/in/shlomit-levavi)
+- [**Nadia Brandes**](https://www.linkedin.com/in/nadia-brandes)
+- [**Ilana Levintal**](https://www.linkedin.com/in/ilana-levintal-989805196)
+- [**Yana Gabelev**](https://www.linkedin.com/in/yanagabelev)
+
+> We proudly designed BRIDGE as a modular, AI-powered system that reflects both technical depth and collaborative spirit.
+
+### 🔗 Technologies & Resources
+- Built with [FastAPI](https://fastapi.tiangolo.com/) and [Streamlit](https://streamlit.io/)
+- Powered by [OpenAI](https://openai.com/) GPT models
+- Semantic search using [Sentence Transformers](https://www.sbert.net/)
+- MongoDB for persistence and vector-based caching
+- Icons by [Feather Icons](https://feathericons.com/)
+
+Specia
