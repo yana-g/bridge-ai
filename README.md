@@ -272,6 +272,9 @@ This project was built with ❤️ as part of a collaborative effort by a talent
 
 > We proudly designed BRIDGE as a modular, AI-powered system that reflects both technical depth and collaborative spirit.
 
+### 👨‍🏫 Mentorship Acknowledgment  
+Special thanks to [**Arik Vaserman**](https://www.linkedin.com/in/arik-vaserman-1b575231), instructor and mentor at the Bar-Ilan Data Science Program, for his invaluable guidance, support, and inspiration throughout the project.
+
 ### 🔗 Technologies & Resources
 - Built with [FastAPI](https://fastapi.tiangolo.com/) and [Streamlit](https://streamlit.io/)
 - Powered by [OpenAI](https://openai.com/) GPT models
