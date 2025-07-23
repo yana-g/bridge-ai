@@ -229,3 +229,6 @@ llm_bridge.egg-info/
 cache/
 __pycache__/
 *.pyc
+logs/
+**/logs/
+*.log
