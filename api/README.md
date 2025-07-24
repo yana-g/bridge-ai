@@ -1,18 +1,67 @@
-# LLM Bridge API
+# 📡 LLM Bridge API
 
-A FastAPI-based service that provides a structured interface for interacting with Large Language Models (LLMs). The API handles authentication, request validation, and response formatting, making it easy to integrate LLM capabilities into your applications.
+This FastAPI module serves as the entry point to the BRIDGE system.
+It validates, logs, and routes requests to the internal LLM orchestration engine (llm_bridge/bridge.py).
+
+🧠 Note: This module does not operate standalone — it depends on logic from llm_bridge/ and persistence from data_layer/.
+
+## 🚀 Endpoints
+
+### 🔹 POST /ask-llm/
+
+Submits a user prompt and returns a structured response after model routing and confidence evaluation.
+
+**✅ Request Body (JSON)**
+
+| Field						  | Type			| Required	| Description                                                                |
+| ----------------- | --------- | --------- | -------------------------------------------------------------------------- |
+| question					| string		| ✅		    | The user’s input prompt                                                    |
+| vibe			  			| string		| ⬜		    | Optional tone of response (e.g. "Professional")                            |
+| confidence				| boolean		| ⬜		    | Whether to extract confidence from the LLM reply (default: false)          |
+| nature_of_answer	| string		| ⬜		    | "Concise" / "Detailed" – optional format preference (default: "Concise")   |
+
+**🔐 Headers**
+
+ - X-API-Key: Your personal or agent key
+ - X-Username: Optional user identifier (for UI session)
+ - X-Agent-ID: Optional if sent by automated agent (e.g., TVManualAgent)
+
+**✅ Response Body (JSON)**
+
+| Field	              | Type		| Description                                                             |
+| ------------------- | ------- | ----------------------------------------------------------------------- |
+| response	          | string	| The generated response                                                  |
+| model_used	        | string	| The LLM model used for processing                                       |
+| confidence	        | float		| The confidence level of the response (only if confidence was requested) |
+| sources	            | list		| List of sources used for the response                                   |
+| follow_up_questions	| list		| List of follow-up questions                                             |
+
+## 🔄 API Flow
 
 ```mermaid
-graph TD
-    A[Client] -->|Request| B[API Gateway]
-    B --> C[Authentication Middleware]
-    C -->|Valid| D[Request Router]
-    D --> E[LLM Processing]
-    E --> F[Response Formatter]
-    F -->|Response| A
-    C -->|Invalid| G[Error Response]
-    G --> A
+flowchart TD
+    A[Client Request] --> B{Authentication}
+    B -->|Valid| C[Validate Input]
+    B -->|Invalid| X[401 Unauthorized]
+
+    C -->|Invalid| Y[400 Bad Request]
+    C --> D[Process Request]
+
+    D --> E[Route to Handler]
+    E --> F[Query Bridge Layer]
+    F --> G[Format Final Response]
+    G --> H[Return to Client]
+
 ```
+
+## ⚙️ Dependencies
+
+- This module requires:
+  - llm_bridge.bridge — Main processing logic
+  - data_layer.mongoHandler — Logging, embeddings, user sessions
+  - Proper .env file (see project root)
+
+## ⚠️ Note: The current test suite may not fully reflect new logic and some tests may fail or require refactoring to match the latest version.
 
 ## 🌟 Features
 
@@ -141,21 +190,6 @@ POST /ask-llm
 }
 ```
 
-## 🔄 API Flow
-
-```mermaid
-flowchart LR
-    A[Client Request] --> B{Authentication}
-    B -->|Valid| C[Process Request]
-    C --> D[Route to Handler]
-    D --> E[Validate Input]
-    E --> F[Process with LLM]
-    F --> G[Format Response]
-    G --> H[Return to Client]
-    B -->|Invalid| I[Return 401 Unauthorized]
-    E -->|Invalid| J[Return 400 Bad Request]
-```
-
 ## 📊 Error Handling
 
 The API returns appropriate HTTP status codes and JSON error responses:
@@ -189,14 +223,3 @@ gantt
 Current rate limits:
 - 60 requests per minute per API key
 - 1000 requests per day per user
-
-## 🧪 Testing
-
-Run the test suite with:
-```bash
-pytest api/tests/
-```
-
-## � License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
