@@ -1,6 +1,6 @@
 # Bridge AI System
 
-> An intelligent question routing system that analyzes user prompts and directs them to the most appropriate AI model for optimal responses.
+An intelligent question routing system that analyzes user prompts and directs them to the most appropriate AI model for optimal responses.
 
 ## 📖 Overview
 
@@ -41,27 +41,28 @@ Bridge AI is ready to use with minimal setup. Here's what it does:
 
 ```mermaid
 flowchart TD
-    A[User Interface<br>(Web / Mobile / API)] --> B[Chat Agent / API Handler]
+    A[User Interface<br>Web / Mobile / API] --> B[Chat Agent / API Handler]
     B --> C[Bridge AI System]
 
     C --> D[Language Check]
-    D -->|Non-English| D1["Reply: Please use English"]
+    D -->|Non-English| D1[Reply: Please use English]
     D -->|English| E[Simple Intent?]
-    E -->|Yes| E1["Return Direct Response"]
+    E -->|Yes| E1[Return Direct Response]
     E -->|No| F[Cache Check]
 
-    F --> F1[In-Memory Cache Hit?]
-    F1 -->|Yes| F2["Return Cached Response"]
-    F1 -->|No| F3[MongoDB Semantic Cache Hit?]
-    F3 -->|Yes| F4["Return Cached Response"]
+    F --> F1[Local Cache Hit?]
+    F1 -->|Yes| F2[Return Cached Response]
+    F1 -->|No| F3[MongoDB Cache Hit?]
+    F3 -->|Yes| F4[Return Cached Response]
     F3 -->|No| G[Prompt Analysis: More Info Needed?]
 
-    G -->|Yes| G1["Generate Follow-Up Question(s)"]
+    G -->|Yes| G1[Generate Follow-Up Question(s)]
     G -->|No| H[Route to LLM]
 
-    H --> H1{Query Complexity}
+    H --> H1{Query Type}
     H1 -->|Simple| I[Use GPT-3.5]
     H1 -->|Complex| J[Use GPT-4]
+    H1 -->|TV Manual Query| T[Use TVManualAgent]
 
     I --> I1[Evaluate Answer Quality]
     I1 -->|Low| J
@@ -69,6 +70,9 @@ flowchart TD
 
     J --> J1[Evaluate Answer Quality]
     J1 --> K
+
+    T --> T1[Evaluate Answer Quality]
+    T1 --> K
 
     D1 --> Z[End]
     E1 --> Z
@@ -78,6 +82,7 @@ flowchart TD
     K --> Z
 
     style Z fill:#f4f4f4,stroke:#ccc
+
 ```
 
 ### Request Flow
