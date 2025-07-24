@@ -357,18 +357,18 @@ class LLMBridge:
                 'formal_indicators': ['good morning', 'good afternoon', 'good evening'],
                 'casual_indicators': ['hey', 'hi'],
                 'responses': {
-                    'formal': "Hello! Great to meet you 😊 How can I help you today?",
-                    'casual': "Hey and welcome! What can I help you figure out today?",
-                    'default': "Hi there! I'm Bridge, ready to assist. What's on your mind?"
+                    'formal': "Good day. How may I assist you?",
+                    'casual': "Hey there! How can I help you today? 😊",
+                    'default': "Hello! I'm Bridge. How can I assist you today?"
                 }
             },
             'thanks': {
                 'enthusiastic_indicators': ['thank you so much', 'really appreciate', 'grateful', 'amazing'],
                 'simple_indicators': ['thanks', 'thx', 'ty'],
                 'responses': {
-                    'enthusiastic': "My pleasure! I'm here whenever you need assistance 😊",
-                    'simple': "You're very welcome! Happy to help 😊",
-                    'default': "Glad I could help! Feel free to ask me anything else."
+                    'enthusiastic': "My pleasure! I'm always here if you need anything 😊",
+                    'simple': "You're welcome! Let me know if there's anything else you'd like to explore 😊",
+                    'default': "Glad I could help. I'm here if you need anything else."
                 }
             },
             'unclear': {
@@ -376,10 +376,10 @@ class LLMBridge:
                 'help_seeking_indicators': ['help', 'assist', 'support', 'need help'],
                 'vague_question_indicators': ['how', 'what', 'why'],
                 'responses': {
-                    'frustrated': "Looks like there's something you want to solve - give me a bit more detail and I can point you in the right direction!",
-                    'help_seeking': "I'm here to help! What's the topic that's on your mind right now?",
-                    'vague_question': "Okay, let's work on this together! What exactly is happening? Give me some more context.",
-                    'default': "Sounds like you have a challenge 😊 Let's start from the beginning - what are you working on?"
+                    'frustrated': "Sounds like something isn’t working right. Can you share a bit more so I can help you fix it?",
+                    'help_seeking': "Sure! What exactly do you need help with?",
+                    'vague_question': "Let’s figure this out together. Could you share a bit more context?",
+                    'default': "Got it! Let’s take it from the top—what are you trying to figure out?"
                 }
             }
         }
