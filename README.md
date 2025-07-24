@@ -8,44 +8,45 @@ The system features real-time logging, semantic caching, intent detection, and a
 ## 🚀 Key Features
 
 ### ***🔁 Smart Model Routing***
-  - Dynamically routes queries to the optimal LLM (e.g., GPT-3.5, GPT-4, or custom local models) based on complexity, context, intent, and required confidence.
+- Dynamically routes queries to the optimal LLM (e.g., GPT‑3.5, GPT‑4, or local models) based on **context**, **intent**, **complexity**, and required **confidence**.
 
 ### ***🧠 Context-Aware Processing***
-  - Supports multiple response vibes (Academic, Business, Technical, Creative, etc.), with tailored prompting and formatting for each.
+- Supports multiple **response vibes** (Academic, Business, Technical, Creative, etc.) with tailored prompting and formatting.
 
 ### ***🧭 Intent & Language Detection***
-  - Automatically detects user intent and input language to route the query or flag unsupported inputs (currently English-only).
+- Detects user **intent** and **input language** (currently English-only), and routes accordingly or flags unsupported input.
 
-### ***🧠 Confidence Scoring & Model Escalation***
-  - Parses confidence levels from model output via [CONFIDENCE:X.XX] tag. If confidence is low, BRIDGE can escalate to a more capable LLM.
+### ***🎯 Confidence Scoring & Model Escalation***
+- Parses confidence from `[CONFIDENCE:X.XX]`. If below threshold, BRIDGE **escalates** to stronger LLM.
 
 ### ***💾 Semantic Caching (MongoDB)***
-  - Uses embeddings to detect similar past queries and return cached results — improving latency and reducing token costs.
+- Embedding-based cache for semantic similarity — reduces **latency** and **token costs**.
 
 ### ***🧮 Token-Aware Logging***
-  - Tracks token usage for each request, including breakdown by prompt and completion. Enables monitoring and rate limiting.
+- Tracks **token usage** per request (prompt + completion), enabling usage monitoring & rate limiting.
 
 ### ***🔐 Secure Authentication***
-  - Supports API Key-based access with optional JWT and granular user/agent validation. Includes rotating API keys, logging, and guest modes.
+- API Key-based access with **optional JWT**, rotating keys, guest access, and **granular agent control**.
 
 ### ***🧩 Modular Architecture***
-  - Clean separation between:
-    - API logic (entry_point_api.py)
-    - User/Auth management (userHandler.py, authHandler.py)
-    - LLM bridging (bridge.py)
-    - Data persistence (mongoHandler.py)    
+- Clean separation of concerns:
+  - API logic: `entry_point_api.py`
+  - User/Auth: `userHandler.py`, `authHandler.py`
+  - LLM Bridging: `bridge.py`
+  - Persistence: `mongoHandler.py`
 
 ### ***📊 Real-Time Logging & Monitoring***
-  - All interactions are logged via middleware, including request metadata, response time, and exceptions. Optional log rotation is built-in.
+- Logs request metadata, response time, and exceptions via **middleware**. Supports optional **log rotation**.
 
 ### ***🧠 Chain-of-Thought (CoT) Ready***
-  - Future-ready structure allows integration of multi-step reasoning and explanation generation.
+- Future-ready: structure allows integration of **multi-step reasoning** and explanation generation.
 
 ### ***💡 Extensible by Design***
-  - New models, storage layers, or analysis modules can be added with minimal changes. Easily pluggable with tools like RAG, LangChain, or stream processors.
+- Modular: add new **models**, **storage**, or **tools** (e.g., RAG, LangChain) with minimal code changes.
 
 ### ***🖥️ Optional UI Dashboard (Streamlit)***
-  - When enabled, displays chat logs, vibe selectors, confidence gauges, and usage statistics in a clean front-end.
+- Real-time UI with **chat logs**, **vibe selectors**, **confidence gauge**, and **usage stats**.
+
 
 ## 🏗 System Architecture
 
@@ -91,6 +92,13 @@ subgraph LLM Bridge
 
 end
 ```
+
+## 📂 Module Docs
+
+- [`llm_bridge/`](./llm_bridge/README.md) – Prompt routing & confidence logic  
+- [`api/`](./api/README.md) – FastAPI entrypoint, middleware, auth  
+- [`data_layer/`](./data_layer/README.md) – MongoDB & embedding-based cache  
+- [`bridge_ui/`](./bridge_ui/README.md) – Streamlit-based dashboard
 
 ## 🧩 Core Components
 
