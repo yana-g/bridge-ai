@@ -81,8 +81,6 @@ flowchart TD
     F4 --> B
     G1 --> B
     K --> B
-
-    style Z fill:#f4f4f4,stroke:#ccc
 ```
 
 ### Request Flow
