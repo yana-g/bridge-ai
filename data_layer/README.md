@@ -17,7 +17,9 @@ It handles all read/write operations, including user accounts, chat logs, semant
 ```mermaid
 flowchart TD
     A[User / Agent] -->|Prompt| B[API Layer]
-    B --> C[LLM Bridge]
+    B --> Auth[Validate API Key & Username]
+    Auth -->|Valid| C[LLM Bridge]
+    Auth -->|Invalid| F[401 Unauthorized]
     C --> D[MongoDBHandler]
 
     subgraph MongoDBHandler
