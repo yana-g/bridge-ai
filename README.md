@@ -41,18 +41,18 @@ The system features real-time logging, semantic caching, intent detection, and a
 ```mermaid
 flowchart TD
     subgraph Clients
-        A[🌐 User / UI Client]
-        B[🤖 TVMANUAL_AGENT<br>(External Agent)]
+        A[User / UI Client]
+        B[TVMANUAL_AGENT (External Agent)]
     end
 
     subgraph API Layer
         C[FastAPI Entrypoint]
         C --> D[Authentication & Validation]
         D -->|Valid| E[LLM Router]
-        D -->|Invalid| Z[❌ Unauthorized]
-        E --> F1[LLM1<br>Local Model]
-        E --> F2[LLM2<br>GPT-3.5]
-        E --> F3[LLM3<br>GPT-4]
+        D -->|Invalid| Z[Unauthorized]
+        E --> F1[LLM1 - Local Model]
+        E --> F2[LLM2 - GPT-3.5]
+        E --> F3[LLM3 - GPT-4]
         E --> G[Confidence Evaluation]
         G --> H[Response Formatter]
     end
@@ -60,7 +60,7 @@ flowchart TD
     A -->|Prompt| C
     B -->|Prompt| C
 
-    F1 & F2 & F3 --> L[📦 MongoDB<br>Logs & Embeddings]
+    F1 & F2 & F3 --> L[MongoDB Logs & Embeddings]
     G --> L
     H --> M[Client Response]
 ```
