@@ -52,19 +52,24 @@ flowchart TD
     C --> D[Language Check]
     D -->|Non-English| D1[Reply: Please use English]
     D -->|English| E[Simple Intent?]
-    E -->|Yes| E1[Return Direct Response]
+
+    %% Modified block: check math expression before direct answer
+    E -->|Yes| EM[Math Expression?]
+    EM -->|Yes| G1[Solve with math.js]
+    G1 --> B
+    EM -->|No| E1[Return Direct Response]
+    E1 --> B
+
     E -->|No| F[Cache Check]
 
     F --> F1[Local Cache Hit?]
     F1 -->|Yes| F2[Return Cached Response]
+    F2 --> B
     F1 -->|No| F3[MongoDB Cache Hit?]
     F3 -->|Yes| F4[Return Cached Response]
-    F3 -->|No| G[Is Math Expression?]
+    F4 --> B
+    F3 -->|No| H[Prompt Analysis]
 
-    G -->|Yes| G1[Solve with math.js]
-    G1 --> B
-
-    G -->|No| H[Prompt Analysis]
     H --> H1[More Info Needed?]
     H1 -->|Yes| H2[Generate Follow-Up Question]
     H2 --> B
@@ -81,11 +86,8 @@ flowchart TD
     K --> K1[Evaluate Answer Quality]
     K1 --> L
 
-    D1 --> B
-    E1 --> B
-    F2 --> B
-    F4 --> B
     L --> B
+    D1 --> B
 ```
 
 ### Request Flow
