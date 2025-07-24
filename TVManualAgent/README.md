@@ -18,6 +18,7 @@ flowchart TD
     A[User Input] --> B[Streamlit Frontend: main.py]
     B --> C[PDF Semantic Search: pdf_load.py]
     C -->|Confident Match| D[Return Answer from PDF]
+    D --> B 
     C -->|No Match| E[Call BRIDGE API via api_client.py]
     E --> F[Remote LLM Reasoning]
     F --> G[Return Structured Answer]
