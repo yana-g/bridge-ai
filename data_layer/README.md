@@ -1,15 +1,96 @@
-# Data Layer Module
+# 📦 Data Layer: MongoDB Backend
 
-This module provides database connectivity and data management for the BRIDGE LLM Routing System, handling all interactions with MongoDB.
+This module provides database connectivity and data persistence for the BRIDGE LLM Routing System.
+It handles all read/write operations, including user accounts, chat logs, semantic search, and cache storage.
 
-## Features
+## ⚙️ Features
 
-- **MongoDB Integration**: Thread-safe singleton pattern for database connections
-- **User Management**: CRUD operations for user accounts and authentication
-- **QA Storage**: Efficient storage and retrieval of question-answer pairs
-- **Semantic Search**: Advanced search capabilities using sentence transformers
-- **Performance**: Caching and optimization for high throughput
-- **Error Handling**: Robust error handling and connection retry logic
+- **MongoDB Integration**: Singleton-based connection pool for efficient reuse
+- **User Management**: Create, verify, and retrieve user accounts
+- **QA Logging**: Stores prompts, responses, and associated metadata
+- **Semantic Search**: Embedding-based search using SentenceTransformers
+- **Caching Support**: Checks for exact and semantic matches before LLM execution
+- **Error Handling**: Built-in retry and failure handling for robustness
+
+## 🧭 Data Flow – MongoDBHandler
+
+```mermaid
+flowchart TD
+    A[User / Agent] -->|Prompt| B[API Layer]
+    B --> C[LLM Bridge]
+    C --> D[MongoDBHandler]
+
+    subgraph MongoDBHandler
+        D1[create_user()]
+        D2[verify_user()]
+        D3[store_qa()] %% שמירת שאלה-תשובה
+        D4[semantic_search()] %% חיפוש מבוסס embedding
+    end
+
+    B -->|User Registration / Login| D1 & D2
+    C -->|Save & Search QA| D3 & D4
+
+    D1 & D2 & D3 & D4 --> E[(MongoDB)]
+
+    style E fill:#f4f4f4,stroke:#999,stroke-width:1px
+
+
+## 🔹 Functionality Table
+
+| Method                                        | Purpose                                                       |
+|-----------------------------------------------|---------------------------------------------------------------|
+| `test_connection()`                           | Validates MongoDB connectivity                                |
+| `create_user()`                               | Adds new users with hashed API keys                           |
+| `verify_user()`                               | Verifies username and API key                                 |
+| `store_qa()`                                  | Stores question, answer, metadata, and embeddings             |
+| `semantic_search_by_prompt(prompt, threshold)`| Finds semantically similar past prompts                       |
+| `search(prompt, threshold)`                   | Alias for `semantic_search_by_prompt` (for convenience)       |
+| `get_conversation_history(username)`          | Retrieves chat history by user (if implemented)               |
+
+## 🔹 Example Usage
+
+### Semantic Search Example
+
+```python
+prompt = "how do I reset my LG TV?"
+results = db.semantic_search_by_prompt(prompt, threshold=0.85)
+for match in results:
+    print("Found similar question:", match["question"])
+```
+
+
+## 🌱 Environment Variables
+
+| Variable          | Description                          | Default                     |
+|-------------------|--------------------------------------|-----------------------------|
+| `MONGO_URI`       | MongoDB connection string            | — (required)                |
+| `DB_NAME`         | Database name                        | `bridge_db`                 |
+| `EMBEDDING_MODEL` | Sentence transformer model to use    | `all-MiniLM-L6-v2`          |
+
+---
+
+## 🔑 MongoDBHandler – Core Methods
+
+| Category       | Method                                    | Purpose                                      |
+|----------------|-------------------------------------------|----------------------------------------------|
+| **Connection** | `test_connection()`                       | Checks MongoDB availability                  |
+| **Users**      | `create_user(username, email, password)`  | Creates a new user                           |
+|                | `verify_user(username, password)`         | Validates credentials                        |
+|                | `get_user(user_id)`                       | Fetches user info                            |
+| **QA Logs**    | `save_qa_record(user_id, question, ...)`  | Saves prompt/answer + metadata               |
+|                | `get_conversation_history(user_id)`       | (If implemented) Load user history           |
+| **Search**     | `semantic_search_by_prompt(...)`          | Finds semantically similar prompts           |
+|                | `search(prompt, threshold)`               | Fallback method: exact first, then semantic  |
+
+---
+
+## 🧪 Testing
+
+- ℹ️ *Note: Some test cases may require updates. Contributions are welcome.*
+
+```bash
+python test_mongodb_connection.py
+```
 
 ## Dependencies
 
@@ -57,57 +138,3 @@ results = db_handler.semantic_search_by_prompt(
     top_k=3
 )
 ```
-
-## API Reference
-
-### MongoDBHandler
-
-Singleton class that handles all database operations.
-
-#### Key Methods
-
-- `test_connection()`: Verify database connectivity
-- `create_user(username, email, password)`: Register a new user
-- `verify_user(username, password)`: Authenticate a user
-- `get_user(user_id)`: Retrieve user details
-- `save_qa_record(user_id, question, answer, metadata)`: Store a new QA pair
-- `semantic_search_by_prompt(query, threshold, top_k)`: Find similar questions using semantic search
-- `search(prompt, threshold)`: Unified search that tries exact match first, then semantic search
-
-## Testing
-
-Run the test script to verify your MongoDB connection:
-
-```bash
-python test_mongodb_connection.py
-```
-
-## Error Handling
-
-The module includes comprehensive error handling for:
-- Connection failures
-- Timeouts
-- Duplicate keys
-- Invalid operations
-
-## Performance
-
-- Connection pooling for efficient resource usage
-- Caching of frequently accessed data
-- Batch operations where applicable
-- Indexed queries for optimal performance
-
-## Security
-
-- Password hashing (implemented in the calling application)
-- API key rotation support
-- Input validation
-- Secure connection to MongoDB (when configured with proper URI)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
