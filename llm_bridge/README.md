@@ -87,7 +87,7 @@ flowchart TD
 
 **Step-by-step process:**
 
-1. ***User Interface*** – Input received via Web UI, Mobile App, or TVManual Agent
+1. ***User Interface*** – Input received via Web UI, TVManual Agent or any other interface
 2. ***Chat Agent / API Handler*** – Handles the request and forwards it to Bridge AI
 3. ***Language Check*** – Detects language; non-English prompts receive a polite fallback response
 4. ***Simple Intent Detection*** – If it's a greeting, thank you, or meta-query → respond directly
