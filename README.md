@@ -84,7 +84,7 @@ end
 ## 🧩 Core Components
 
 1. **LLM Bridge Layer** (`llm_bridge/`)
-- Orchestrates the entire flow from query intake to LLM output formatting.
+Orchestrates the entire flow from query intake to LLM output formatting.
 | Module                | Functionality                                                                                                       |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `bridge.py`           | Central orchestrator of the query pipeline. Receives all inputs and returns structured responses.                   |
@@ -96,7 +96,7 @@ end
 | `output_manager.py`   | Formats, normalizes, and packages the final response for UI/API consumption.                                        |
 
 2. **API Layer** (`api/`)
-- Exposes the system via a secure, flexible FastAPI backend.
+Exposes the system via a secure, flexible FastAPI backend.
 | Functionality        | Details                                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
 | `/ask-llm/` endpoint | Accepts question payloads, injects vibe, processes via `bridge.py`, and returns full response.           |
@@ -107,7 +107,7 @@ end
 | Validation           | Pydantic models ensure every payload is safe and well-structured.                                        |
 
 3. **Data Layer** (`data_layer/`)
-- Provides persistent storage and caching.
+Provides persistent storage and caching.
 | Module            | Capability                                                          |
 | ----------------- | ------------------------------------------------------------------- |
 | `mongoHandler.py` | Handles chat logs, embeddings, cache checks, user and session data. |
@@ -117,7 +117,7 @@ end
 
 
 4. **User Interface** (`bridge_ui/`)
-- Optional real-time UI via Streamlit.
+Optional real-time UI via Streamlit.
 | Feature    | Description                                    |
 | ---------- | ---------------------------------------------- |
 | UI         | Streamlit-based web interface                  |
@@ -125,7 +125,7 @@ end
 | Authentication | User authentication and session management |
 
 5. **TV Manual Agent** (`TVManualAgent/`)
-- A custom AI module designed to answer TV manual–related questions.
+A custom AI module designed to answer TV manual–related questions.
 | Feature         | Description                                                                             |
 | --------------- | --------------------------------------------------------------------------------------- |
 | Input source    | PDF manuals of various TV models                                                        |
@@ -161,6 +161,7 @@ end
 
 ## 📚 Project Structure
 
+```text
 BRIDGE_v2.2.1/
 ├── api/                    # FastAPI application
 │   ├── __init__.py
