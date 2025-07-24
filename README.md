@@ -7,33 +7,44 @@ The system features real-time logging, semantic caching, intent detection, and a
 
 ## 🚀 Key Features
 
-**🔁 Smart Model Routing**
+### 🔁 Smart Model Routing
   - Dynamically routes queries to the optimal LLM (e.g., GPT-3.5, GPT-4, or custom local models) based on complexity, context, intent, and required confidence.
-**🧠 Context-Aware Processing**
+
+### 🧠 Context-Aware Processing
   - Supports multiple response vibes (Academic, Business, Technical, Creative, etc.), with tailored prompting and formatting for each.
-**🧭 Intent & Language Detection**
+
+### 🧭 Intent & Language Detection
   - Automatically detects user intent and input language to route the query or flag unsupported inputs (currently English-only).
-**🧠 Confidence Scoring & Model Escalation**
+
+### 🧠 Confidence Scoring & Model Escalation
   - Parses confidence levels from model output via [CONFIDENCE:X.XX] tag. If confidence is low, BRIDGE can escalate to a more capable LLM.
-**💾 Semantic Caching (MongoDB)**
+
+### 💾 Semantic Caching (MongoDB)
   - Uses embeddings to detect similar past queries and return cached results — improving latency and reducing token costs.
-**🧮 Token-Aware Logging**
+
+### 🧮 Token-Aware Logging
   - Tracks token usage for each request, including breakdown by prompt and completion. Enables monitoring and rate limiting.
-**🔐 Secure Authentication**
+
+### 🔐 Secure Authentication
   - Supports API Key-based access with optional JWT and granular user/agent validation. Includes rotating API keys, logging, and guest modes.
-**🧩 Modular Architecture**
+
+### 🧩 Modular Architecture
   - Clean separation between:
     - API logic (entry_point_api.py)
     - User/Auth management (userHandler.py, authHandler.py)
     - LLM bridging (bridge.py)
     - Data persistence (mongoHandler.py)    
-**📊 Real-Time Logging & Monitoring**
+
+### 📊 Real-Time Logging & Monitoring
   - All interactions are logged via middleware, including request metadata, response time, and exceptions. Optional log rotation is built-in.
-**🧠 Chain-of-Thought (CoT) Ready**
+
+### 🧠 Chain-of-Thought (CoT) Ready
   - Future-ready structure allows integration of multi-step reasoning and explanation generation.
-**💡 Extensible by Design**
+
+### 💡 Extensible by Design
   - New models, storage layers, or analysis modules can be added with minimal changes. Easily pluggable with tools like RAG, LangChain, or stream processors.
-**🖥️ Optional UI Dashboard (Streamlit)**
+
+### 🖥️ Optional UI Dashboard (Streamlit)
   - When enabled, displays chat logs, vibe selectors, confidence gauges, and usage statistics in a clean front-end.
 
 ## 🏗 System Architecture
@@ -84,7 +95,9 @@ end
 ## 🧩 Core Components
 
 1. **LLM Bridge Layer** (`llm_bridge/`)
+
 Orchestrates the entire flow from query intake to LLM output formatting.
+
 | Module                | Functionality                                                                                                       |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `bridge.py`           | Central orchestrator of the query pipeline. Receives all inputs and returns structured responses.                   |
@@ -96,7 +109,9 @@ Orchestrates the entire flow from query intake to LLM output formatting.
 | `output_manager.py`   | Formats, normalizes, and packages the final response for UI/API consumption.                                        |
 
 2. **API Layer** (`api/`)
+
 Exposes the system via a secure, flexible FastAPI backend.
+
 | Functionality        | Details                                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
 | `/ask-llm/` endpoint | Accepts question payloads, injects vibe, processes via `bridge.py`, and returns full response.           |
@@ -107,7 +122,9 @@ Exposes the system via a secure, flexible FastAPI backend.
 | Validation           | Pydantic models ensure every payload is safe and well-structured.                                        |
 
 3. **Data Layer** (`data_layer/`)
+
 Provides persistent storage and caching.
+
 | Module            | Capability                                                          |
 | ----------------- | ------------------------------------------------------------------- |
 | `mongoHandler.py` | Handles chat logs, embeddings, cache checks, user and session data. |
@@ -117,7 +134,9 @@ Provides persistent storage and caching.
 
 
 4. **User Interface** (`bridge_ui/`)
+
 Optional real-time UI via Streamlit.
+
 | Feature    | Description                                    |
 | ---------- | ---------------------------------------------- |
 | UI         | Streamlit-based web interface                  |
@@ -125,7 +144,9 @@ Optional real-time UI via Streamlit.
 | Authentication | User authentication and session management |
 
 5. **TV Manual Agent** (`TVManualAgent/`)
+
 A custom AI module designed to answer TV manual–related questions.
+
 | Feature         | Description                                                                             |
 | --------------- | --------------------------------------------------------------------------------------- |
 | Input source    | PDF manuals of various TV models                                                        |
