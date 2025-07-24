@@ -53,7 +53,7 @@ flowchart TD
     D -->|Non-English| D1[Reply: Please use English]
     D -->|English| E[Simple Intent?]
     E -->|Yes| E1[Return Direct Response]
-    E -->|No| F[Is Math Expression?]
+    E --> F[Is Math Expression?]
 
     F -->|Yes| F1[Solve with math.js]
     F1 --> B
