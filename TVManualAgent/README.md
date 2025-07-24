@@ -15,8 +15,8 @@ Combines semantic search over embedded PDF data with fallback LLM reasoning via 
 
 ```mermaid
 flowchart TD
-    A[User Input] --> B[Streamlit Frontend (main.py)]
-    B --> C[PDF Semantic Search (pdf_load.py)]
+    A[User Input] --> B[Streamlit Frontend: main.py]
+    B --> C[PDF Semantic Search: pdf_load.py]
     C -->|Confident Match| D[Return Answer from PDF]
     C -->|No Match| E[Call BRIDGE API via api_client.py]
     E --> F[Remote LLM Reasoning]
