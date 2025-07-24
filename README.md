@@ -42,7 +42,7 @@ The system features real-time logging, semantic caching, intent detection, and a
 flowchart TD
     subgraph Clients
         A[User / UI Client]
-        B[TVManualAgent (External Agent)]
+        B[TVManualAgent]
     end
 
     subgraph API Layer
