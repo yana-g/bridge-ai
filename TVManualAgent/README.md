@@ -1,7 +1,7 @@
 # 📺 TV Manual Agent
 
-A smart assistant that answers user questions based on TV manuals.  
-Combines **semantic search** from user-uploaded PDFs with **LLM reasoning**, using either a local model or a remote BRIDGE API fallback.
+A standalone smart assistant for answering questions based on TV manuals.
+Combines semantic search over embedded PDF data with fallback LLM reasoning via the BRIDGE API.
 
 ## 🧠 What It Does
 
@@ -13,21 +13,22 @@ Combines **semantic search** from user-uploaded PDFs with **LLM reasoning**, usi
 
 ## 🧱 Architecture
 
-TVManualAgent/
-│
-├── main.py                     # Streamlit frontend logic
-├── llm_load.py                 # Load local open-source LLMs (e.g., DialoGPT, Llama-2)
-├── api_client.py               # Client for querying remote BRIDGE API
-├── pdf_load.py                 # PDF parsing, embedding, indexing with FAISS
-├── test_bridge_connection.py   # Quick connectivity tester for BRIDGE API
-└── 📁 Data/                    # Folder containing user-uploaded TV manuals in PDF
+```mermaid
+flowchart TD
+    A[User Input] --> B[Streamlit Frontend (main.py)]
+    B --> C[PDF Semantic Search (pdf_load.py)]
+    C -->|Confident Match| D[Return Answer from PDF]
+    C -->|No Match| E[Call BRIDGE API via api_client.py]
+    E --> F[Remote LLM Reasoning]
+    F --> G[Return Structured Answer]
+```
 
 ## ⚙️ Features
 
 ### 🔍 Hybrid QA Pipeline
-1. **PDF Embedding Search**: Via FAISS + MiniLM
-2. **Fallback to LLM API**: Via `/ask-llm/` if no confident match
-3. **Structured Response Rendering**: Markdown + follow-up suggestions
+- **Step 1**: Semantic search via FAISS over user manuals
+- **Step 2**: If no confident result → fallback to `/ask-llm/` in BRIDGE
+- **Step 3**: Render clean, structured responses with follow-up suggestions
 
 ### 📄 PDF Processing
 - Extracts text from `.pdf` using `PyPDF2`
@@ -36,16 +37,32 @@ TVManualAgent/
 - Indexes with FAISS (`faiss-cpu` or `faiss-gpu`)
 
 ### 🤖 LLM Support
-- Load HuggingFace models like:
-  - `DialoGPT`, `GPT2`, `Llama-2-7b-chat-hf` (with token)
-- Customize via HuggingFace token input
-- Auto format prompt per model
+- Load HuggingFace models dynamically via token
+- Supports small chat models (e.g., DialoGPT, Llama)
+- Prompts are auto-formatted per model requirements
 
-### 🔗 BRIDGE API Fallback
-- Calls `/ask-llm/` endpoint with:
-  - `question`, `vibe`, `confidence`, `sender_id`
-- Auth via `x-api-key`
-- Returns structured JSON with answer + follow-up questions
+### 🔗 Remote BRIDGE API (Fallback)
+- Calls `/ask-llm/` endpoint with `question`, `vibe`, `confidence`, `sender_id`
+- Uses `x-api-key` for secure access
+- Returns structured JSON with answer, model info, confidence, and follow-up
+
+## 🚀 How It Works (Pipeline)
+
+1. **Extract Text** → from PDFs using PyPDF2
+2. **Chunk Content** → into overlapping 500-word segments
+3. **Create Embeddings** → using Sentence Transformers
+4. **Build FAISS Index** → enables semantic search
+5. **Answer Query** → via model or BRIDGE fallback
+
+
+## 🧪 Example Use Cases
+
+| Question                          | Behavior                        |
+|-----------------------------------|---------------------------------|
+| “How do I set parental controls?” | Searches manual PDFs            |
+| No match found                    | Escalates to BRIDGE             |
+| Bridge returns follow-up          | Chat UI renders it              |
+| Want source context?              | Expand original PDF chunk view  |
 
 ## 📁 Current Manuals (Sample)
 
@@ -56,23 +73,6 @@ TVManualAgent/
 | tcl.pdf     | TCL TV Manual       | 1.3 MB |
 
 To add more, simply drop new `.pdf` files into `/Data`.
-
-## 🧪 Example Use Cases
-
-| Question                          | Behavior |
-|-----------------------------------|----------|
-| “How do I set parental controls?” | Searches manual PDFs |
-| No match found                    | Escalates to BRIDGE |
-| Bridge returns follow-up          | Chat UI renders it |
-| Want source context?              | Expand original PDF chunk view |
-
-## 🚀 How It Works (Pipeline)
-
-1. **Extract Text** → from PDFs using PyPDF2
-2. **Chunk Content** → into overlapping 500-word segments
-3. **Create Embeddings** → using Sentence Transformers
-4. **Build FAISS Index** → enables semantic search
-5. **Answer Query** → via model or BRIDGE fallback
 
 ## 🔧 Setup Instructions
 
@@ -88,8 +88,8 @@ To add more, simply drop new `.pdf` files into `/Data`.
 - For first-time model download, ensure good internet connection (13GB download)
 
 ### Before running the app make sure you have:
-1. BRIDGE_v2 app API running
-2. BRIDGE_v2 app API is accessible via `http://localhost:8000`
+1. BRIDGE app API running
+2. BRIDGE app API is accessible via `http://localhost:8000`
 
 ### Method 1: Direct command
 ```bash

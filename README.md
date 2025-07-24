@@ -205,7 +205,7 @@ A custom AI module designed to answer TV manual–related questions.
 ## 📚 Project Structure
 
 ```text
-BRIDGE_v2.2.1/
+BRIDGE/
 ├── api/                    # FastAPI application
 │   ├── __init__.py
 │   ├── main.py            # API entry point
