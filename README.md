@@ -80,38 +80,42 @@ subgraph Clients
     T[TVManualAgent]
 end
 
-U -->|Prompt| A
+U -->|Prompt| A[FastAPI API Layer]
 T -->|Prompt| A
 
-%% === API Layer ===
-A[FastAPI API Layer] --> B[LLM Bridge]
+%% === Bridge Layer ===
+A --> B[LLM Bridge]
 
-%% === Bridge Flow ===
 subgraph LLM Bridge
-
     B --> C[Language & Intent Detection]
-    C --> D[Semantic & Exact Cache Check]
+    C --> D[Cache Check<br>Exact + Semantic]
 
-    D -->|Hit| R[Return Cached Answer ✅]
-    D -->|Miss| E[Prompt Complexity Analysis]
+    D -->|Hit| R[Return Cached Answer]
+    D -->|Miss| E[Prompt Analysis]
 
-    E --> F{Is More Info Needed?}
-    F -->|Yes| G[Generate Additional Prompt]
-    G --> H[Send to LLM2 or LLM3]
-    F -->|No| H
-
-    H --> I[Receive Answer + Confidence Score]
-    I --> J{Confidence < Threshold?}
+    E --> M{Is Math Expression?}
+    M -->|Yes| MX[Solve with math.js]
+    MX --> O[Return Final Answer to API]
     
-    J -->|Yes| K[Upgrade to Stronger LLM - e.g. LLM3]
+    M -->|No| F{More Info Needed?}
+    F -->|Yes| G[Generate Follow-Up Prompt]
+    G --> H[Route to LLM2 or LLM3]
+    F -->|No| H[Route to LLM]
+
+    H --> I[Answer + Confidence]
+    I --> J{Low Confidence?}
+
+    J -->|Yes| K[Escalate to Stronger LLM]
     K --> I
 
-    J -->|No| L[Evaluate Answer Quality]
-    L --> M[Generate Final JSON + Logs]
-    M --> N[Store Logs & Embeddings in MongoDB]
-    M --> O[Return Final Answer to Client]
-
+    J -->|No| L[Evaluate Quality]
+    L --> N[Build Final JSON]
+    N --> P[Log to MongoDB]
+    N --> O
 end
+
+O --> A
+A --> U
 ```
 
 ## 🧩 Core Components
