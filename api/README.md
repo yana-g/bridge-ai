@@ -61,8 +61,6 @@ flowchart TD
   - data_layer.mongoHandler — Logging, embeddings, user sessions
   - Proper .env file (see project root)
 
-## ⚠️ Note: The current test suite may not fully reflect new logic and some tests may fail or require refactoring to match the latest version.
-
 ## 🌟 Features
 
 - **Structured Requests**: Send well-formatted prompts with configurable parameters
@@ -73,6 +71,14 @@ flowchart TD
 - **Health Monitoring**: Built-in health check endpoint
 - **Async Support**: Fully asynchronous implementation for high performance
 - **Comprehensive Testing**: Complete test coverage including authentication and error cases
+   - ℹ️ *Note: The test suite is currently being revised to reflect recent logic changes.*
+
+## 📚 API Documentation
+
+Once the API is running, you can access:
+
+- **Interactive API Docs (Swagger UI)**: `http://localhost:8000/docs`
+- **Alternative API Docs (ReDoc)**: `http://localhost:8000/redoc`-
 
 ## 🚀 Getting Started
 
