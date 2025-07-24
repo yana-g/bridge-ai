@@ -41,7 +41,12 @@ Bridge AI is ready to use with minimal setup. Here's what it does:
 
 ```mermaid
 flowchart TD
-    A[User Interface] --> B[Chat Agent / API Handler]
+    A1[User]
+    A2[TVManual Agent]
+
+    A1 --> B[Chat Agent / API Handler]
+    A2 --> B
+
     B --> C[Bridge AI System]
 
     C --> D[Language Check]
@@ -62,7 +67,6 @@ flowchart TD
     H --> H1{Query Type}
     H1 -->|Simple| I[Use GPT-3.5]
     H1 -->|Complex| J[Use GPT-4]
-    H1 -->|TV Manual Query| T[Use TVManualAgent]
 
     I --> I1[Evaluate Answer Quality]
     I1 -->|Low| J
@@ -70,9 +74,6 @@ flowchart TD
 
     J --> J1[Evaluate Answer Quality]
     J1 --> K
-
-    T --> T1[Evaluate Answer Quality]
-    T1 --> K
 
     D1 --> Z[End]
     E1 --> Z
@@ -82,7 +83,6 @@ flowchart TD
     K --> Z
 
     style Z fill:#f4f4f4,stroke:#ccc
-
 ```
 
 ### Request Flow
