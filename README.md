@@ -40,31 +40,46 @@ The system features real-time logging, semantic caching, intent detection, and a
 
 ```mermaid
 flowchart TD
-    subgraph Clients
-        A[User / UI Client]
-        B[TVManualAgent]
-    end
 
-    subgraph API Layer
-        C[FastAPI Entrypoint]
-        C --> D[Authentication & Validation]
-        D -->|Valid| E[LLM Router]
-        D -->|Invalid| Z[Unauthorized]
-        E --> F1[LLM1 - Local Model]
-        E --> F2[LLM2 - GPT-3.5]
-        E --> F3[LLM3 - GPT-4]
-        E --> G[Confidence Evaluation]
-        G --> H[Response Formatter]
-    end
+%% === Clients ===
+subgraph Clients
+    U[User / UI Client]
+    T[TVManualAgent]
+end
 
-    A -->|Prompt| C
-    B -->|Prompt| C
+U -->|Prompt| A
+T -->|Prompt| A
 
-    F1 --> L[MongoDB Logs & Embeddings]
-    F2 --> L
-    F3 --> L
-    G  --> L
-    H --> M[Client Response]
+%% === API Layer ===
+A[FastAPI API Layer] --> B[LLM Bridge]
+
+%% === Bridge Flow ===
+subgraph LLM Bridge
+
+    B --> C[Language & Intent Detection]
+    C --> D[Semantic & Exact Cache Check]
+
+    D -->|Hit| R[Return Cached Answer ✅]
+    D -->|Miss| E[Prompt Complexity Analysis]
+
+    E --> F{Is More Info Needed?}
+    F -->|Yes| G[Generate Additional Prompt]
+    G --> H[Send to LLM2 or LLM3]
+    F -->|No| H
+
+    H --> I[Receive Answer + Confidence Score]
+    I --> J{Confidence < Threshold?}
+    
+    J -->|Yes| K[Upgrade to Stronger LLM (e.g. LLM3)]
+    K --> I
+
+    J -->|No| L[Evaluate Answer Quality]
+    L --> M[Generate Final JSON + Logs]
+    M --> N[Store Logs & Embeddings in MongoDB]
+    M --> O[Return Final Answer to Client]
+
+end
+
 ```
 
 ## 🧩 Core Components
