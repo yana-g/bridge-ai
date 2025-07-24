@@ -16,7 +16,7 @@ It handles all read/write operations, including user accounts, chat logs, semant
 
 ```mermaid
 flowchart TD
-    A[User / Agent] -->|Prompt| B[API Layer]
+    A[User / Agent] -->|Request| B[API Layer]
     B --> Auth[Validate API Key & Username]
     Auth -->|Valid| C[LLM Bridge]
     Auth -->|Invalid| F[401 Unauthorized]
