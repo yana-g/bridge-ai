@@ -20,10 +20,11 @@ The system features real-time logging, semantic caching, intent detection, and a
 - [Acknowledgments](#-acknowledgments)
 
 📎 **Module Sub-Docs:**
-- [`llm_bridge/`](./llm_bridge/README.md)
-- [`api/`](./api/README.md)
-- [`data_layer/`](./data_layer/README.md)
-- [`bridge_ui/`](./bridge_ui/README.md)
+
+- [`llm_bridge/`](./llm_bridge/README.md) — Core routing logic: prompt analysis, model selection, caching, formatting.
+- [`api/`](./api/README.md) — FastAPI backend: endpoints, auth handlers, rate limiting, logging.
+- [`data_layer/`](./data_layer/README.md) — MongoDB integration: storage, embedding cache, user sessions.
+- [`bridge_ui/`](./bridge_ui/README.md) — Streamlit UI: real-time chat, dashboard, session management.
 
 ## 🚀 Key Features
 
