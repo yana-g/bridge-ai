@@ -75,12 +75,12 @@ flowchart TD
     J --> J1[Evaluate Answer Quality]
     J1 --> K
 
-    D1 --> Z[End]
-    E1 --> Z
-    F2 --> Z
-    F4 --> Z
-    G1 --> Z
-    K --> Z
+    D1 --> B
+    E1 --> B
+    F2 --> B
+    F4 --> B
+    G1 --> B
+    K --> B
 
     style Z fill:#f4f4f4,stroke:#ccc
 ```
