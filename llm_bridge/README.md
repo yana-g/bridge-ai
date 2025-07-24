@@ -44,7 +44,7 @@ flowchart TD
     A1[User]
     A2[TVManual Agent]
 
-    A1 --> B[Chat Agent / API Handler]
+    A1 --> B[API Handler]
     A2 --> B[API Handler]
 
     B --> C[Bridge AI System]
@@ -87,28 +87,30 @@ flowchart TD
 
 **Step-by-step process:**
 
-1. **User** - Web app, or API receives user input
-2. **Chat Agent** - Processes UI request and calls Bridge AI
-3. **Simple Intent Detection** - Handle greetings, thanks, system info directly
-4. **Cache Check** - Look for exact or semantic matches
-5. **Prompt Analysis** - Evaluate completeness and informativeness
-6. **Response Classification** - Determine simple vs complex processing
-7. **LLM Routing** - Route to appropriate model
-8. **Quality Assessment** - Evaluate and upgrade if needed
-9. **Response Delivery** - Return through agent to user interface
+1. ***User Interface*** – Input received via Web UI, Mobile App, or TVManual Agent
+2. ***Chat Agent / API Handler*** – Handles the request and forwards it to Bridge AI
+3. ***Language Check*** – Detects language; non-English prompts receive a polite fallback response
+4. ***Simple Intent Detection*** – If it's a greeting, thank you, or meta-query → respond directly
+5. ***Cache Check*** – Look for matches in local in-memory cache, then semantic MongoDB cache
+6. ***Prompt Analysis*** – Determine if the prompt lacks necessary information
+7. ***Response Classification*** – Classify the query as simple, complex, or device-related
+8. ***LLM Routing*** – Route to GPT-3.5, GPT-4, or TVManualAgent accordingly
+9. ***Quality Assessment*** – Evaluate the model's response; escalate to GPT-4 if needed
+10. ***Response Delivery*** – Return the final answer via the agent back to the user interface
+
 
 ## ⚙️ Core Components
 
 **System components and their status:**
 
-- **Bridge Core** (`bridge.py`) - Main orchestrator with enhanced simple intents ✨ *Enhanced*
-- **Cache Manager** (`cache_manager.py`) - Semantic caching with embeddings ✅ *Original*
-- **Prompt Analyzer** (`prompt_analyzer.py`) - Smart prompt evaluation ✨ *Enhanced*
-- **Response Classifier** (`response_classifier.py`) - Simple vs complex classification ✨ *Enhanced*
-- **LLM Router** (`llm_router.py`) - Multi-model routing ✅ *Original*
-- **Answer Evaluator** (`answer_evaluator.py`) - Quality assessment and upgrading ✨ *Enhanced*
-- **Prompt Enhancer** (`prompt_enhancer.py`) - Context-aware prompt optimization ✅ *Original*
-- **Output Manager** (`output_manager.py`) - Response formatting and storage ✅ *Original*
+- **Bridge Core** (`bridge.py`) - Main orchestrator with enhanced simple intents 
+- **Cache Manager** (`cache_manager.py`) - Semantic caching with embeddings 
+- **Prompt Analyzer** (`prompt_analyzer.py`) - Smart prompt evaluation 
+- **Response Classifier** (`response_classifier.py`) - Simple vs complex classification 
+- **LLM Router** (`llm_router.py`) - Multi-model routing 
+- **Answer Evaluator** (`answer_evaluator.py`) - Quality assessment and upgrading 
+- **Prompt Enhancer** (`prompt_enhancer.py`) - Context-aware prompt optimization 
+- **Output Manager** (`output_manager.py`) - Response formatting and storage
 
 ### 1. 🧠 Bridge Core (`bridge.py`)
 
@@ -154,7 +156,7 @@ if best_match_score >= 0.85:  # 85% similarity threshold
     return cached_response
 ```
 
-### 3. 🔍 Prompt Analyzer (`prompt_analyzer.py`) - Enhanced
+### 3. 🔍 Prompt Analyzer (`prompt_analyzer.py`)
 
 **Before (Simple):**
 ```python
@@ -185,7 +187,7 @@ context_requirements = {
 - **Contextual Completeness**: 0.7 score - sufficient context
 - **High Quality**: 0.9 score - comprehensive and clear
 
-### 4. 🎯 Response Classifier (`response_classifier.py`) - Enhanced
+### 4. 🎯 Response Classifier (`response_classifier.py`)
 
 **Classification Logic:**
 
@@ -241,7 +243,7 @@ def route_to_llm(self, prompt, response_type):
     return self._call_openai_api(prompt, config, config['model_name'])
 ```
 
-### 6. ⭐ Answer Evaluator (`answer_evaluator.py`) - Enhanced
+### 6. ⭐ Answer Evaluator (`answer_evaluator.py`)  
 
 **Quality Assessment Components:**
 
