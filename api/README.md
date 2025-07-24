@@ -36,6 +36,12 @@ Submits a user prompt and returns a structured response after model routing and 
 | sources	            | list		| List of sources used for the response                                   |
 | follow_up_questions	| list		| List of follow-up questions                                             |
 
+### Endpoints Example
+- `POST /ask-llm`: Accepts a prompt and returns a response from the LLM pipeline.
+  - **Headers**: `X-API-Key`, `X-Username` (optional)
+  - **Body**: `{ "question": "What is L1 regularization?", "vibe": "Academic" }`
+
+
 ## 🔄 API Flow
 
 ```mermaid
@@ -68,8 +74,8 @@ flowchart TD
 - **Robust Authentication**: Secure API key and username-based authentication
 - **Request Validation**: Comprehensive input validation with meaningful error messages
 - **Request Logging**: Detailed logging for all API requests and responses
-- **Health Monitoring**: Built-in health check endpoint
-- **Async Support**: Fully asynchronous implementation for high performance
+- **Health Monitoring**: Exposes a /health endpoint to validate API uptime
+- **Async Support**: All endpoints are built with async def, enabling high-concurrency performance
 - **Comprehensive Testing**: Complete test coverage including authentication and error cases
    - ℹ️ *Note: The test suite is currently being revised to reflect recent logic changes.*
 
