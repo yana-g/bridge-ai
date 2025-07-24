@@ -45,7 +45,7 @@ flowchart TD
     A2[TVManual Agent]
 
     A1 --> B[API Handler]
-    A2 --> B[API Handler]
+    A2 --> B
 
     B --> C[Bridge AI System]
 
@@ -59,28 +59,33 @@ flowchart TD
     F1 -->|Yes| F2[Return Cached Response]
     F1 -->|No| F3[MongoDB Cache Hit?]
     F3 -->|Yes| F4[Return Cached Response]
-    F3 -->|No| G[Prompt Analysis: More Info Needed?]
+    F3 -->|No| G[Is Math Expression?]
 
-    G -->|Yes| G1[Generate Follow-Up Question]
-    G -->|No| H[Route to LLM]
+    G -->|Yes| G1[Solve with math.js]
+    G1 --> B
 
-    H --> H1{Query Type}
-    H1 -->|Simple| I[Use GPT-3.5]
-    H1 -->|Complex| J[Use GPT-4]
+    G -->|No| H[Prompt Analysis]
+    H --> H1[More Info Needed?]
+    H1 -->|Yes| H2[Generate Follow-Up Question]
+    H2 --> B
+    H1 -->|No| I[Route to LLM]
 
-    I --> I1[Evaluate Answer Quality]
-    I1 -->|Low| J
-    I1 -->|Good| K[Return Final Answer]
+    I --> I1{Query Type}
+    I1 -->|Simple| J[Use GPT-3.5]
+    I1 -->|Complex| K[Use GPT-4]
 
     J --> J1[Evaluate Answer Quality]
-    J1 --> K
+    J1 -->|Low| K
+    J1 -->|Good| L[Return Final Answer]
+
+    K --> K1[Evaluate Answer Quality]
+    K1 --> L
 
     D1 --> B
     E1 --> B
     F2 --> B
     F4 --> B
-    G1 --> B
-    K --> B
+    L --> B
 ```
 
 ### Request Flow
