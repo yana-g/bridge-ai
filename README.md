@@ -7,56 +7,62 @@ The system features real-time logging, semantic caching, intent detection, and a
 
 ## 🚀 Key Features
 
-***🔁 Smart Model Routing***
-- Dynamically routes queries to the optimal LLM (e.g., GPT-3.5, GPT-4, or custom local models) based on complexity, context, intent, and required confidence.
-***🧠 Context-Aware Processing***
-- Supports multiple response vibes (Academic, Business, Technical, Creative, etc.), with tailored prompting and formatting for each.
-***🧭 Intent & Language Detection***
-- Automatically detects user intent and input language to route the query or flag unsupported inputs (currently English-only).
-***🧠 Confidence Scoring & Model Escalation***
-- Parses confidence levels from model output via [CONFIDENCE:X.XX] tag. If confidence is low, BRIDGE can escalate to a more capable LLM.
-***💾 Semantic Caching (MongoDB)***
-- Uses embeddings to detect similar past queries and return cached results — improving latency and reducing token costs.
-***🧮 Token-Aware Logging***
-- Tracks token usage for each request, including breakdown by prompt and completion. Enables monitoring and rate limiting.
-***🔐 Secure Authentication***
-- Supports API Key-based access with optional JWT and granular user/agent validation. Includes rotating API keys, logging, and guest modes.
-***🧩 Modular Architecture***
-- Clean separation between:
+**🔁 Smart Model Routing**
+  - Dynamically routes queries to the optimal LLM (e.g., GPT-3.5, GPT-4, or custom local models) based on complexity, context, intent, and required confidence.
+**🧠 Context-Aware Processing**
+  - Supports multiple response vibes (Academic, Business, Technical, Creative, etc.), with tailored prompting and formatting for each.
+**🧭 Intent & Language Detection**
+  - Automatically detects user intent and input language to route the query or flag unsupported inputs (currently English-only).
+**🧠 Confidence Scoring & Model Escalation**
+  - Parses confidence levels from model output via [CONFIDENCE:X.XX] tag. If confidence is low, BRIDGE can escalate to a more capable LLM.
+**💾 Semantic Caching (MongoDB)**
+  - Uses embeddings to detect similar past queries and return cached results — improving latency and reducing token costs.
+**🧮 Token-Aware Logging**
+  - Tracks token usage for each request, including breakdown by prompt and completion. Enables monitoring and rate limiting.
+**🔐 Secure Authentication**
+  - Supports API Key-based access with optional JWT and granular user/agent validation. Includes rotating API keys, logging, and guest modes.
+**🧩 Modular Architecture**
+  - Clean separation between:
     - API logic (entry_point_api.py)
     - User/Auth management (userHandler.py, authHandler.py)
     - LLM bridging (bridge.py)
     - Data persistence (mongoHandler.py)    
-***📊 Real-Time Logging & Monitoring***
-- All interactions are logged via middleware, including request metadata, response time, and exceptions. Optional log rotation is built-in.
-***🧠 Chain-of-Thought (CoT) Ready***
-- Future-ready structure allows integration of multi-step reasoning and explanation generation.
-***💡 Extensible by Design***
-- New models, storage layers, or analysis modules can be added with minimal changes. Easily pluggable with tools like RAG, LangChain, or stream processors.
-***🖥️ Optional UI Dashboard (Streamlit)***
-- When enabled, displays chat logs, vibe selectors, confidence gauges, and usage statistics in a clean front-end.
+**📊 Real-Time Logging & Monitoring**
+  - All interactions are logged via middleware, including request metadata, response time, and exceptions. Optional log rotation is built-in.
+**🧠 Chain-of-Thought (CoT) Ready**
+  - Future-ready structure allows integration of multi-step reasoning and explanation generation.
+**💡 Extensible by Design**
+  - New models, storage layers, or analysis modules can be added with minimal changes. Easily pluggable with tools like RAG, LangChain, or stream processors.
+**🖥️ Optional UI Dashboard (Streamlit)**
+  - When enabled, displays chat logs, vibe selectors, confidence gauges, and usage statistics in a clean front-end.
 
 ## 🏗 System Architecture
 
 ```mermaid
 flowchart TD
-    A[User / Client App] -->|Prompt| B[API Layer<br>FastAPI]
-    subgraph API Layer
-        B --> C[Authentication & Validation]
-        C -->|Valid| D[LLM Router]
-        D -->|Route| E1[LLM1<br>Local Model]
-        D -->|Route| E2[LLM2<br>GPT-3.5]
-        D -->|Route| E3[LLM3<br>GPT-4]
-        D -->|Route| E4[TVMANUAL_AGENT<br>Specialized Agent]
-        D --> F[Confidence Evaluation]
+    subgraph Clients
+        A[🌐 User / UI Client]
+        B[🤖 TVMANUAL_AGENT<br>(External Agent)]
     end
 
-    F --> G[Response Formatter]
-    G --> H[Client Response]
+    subgraph API Layer
+        C[FastAPI Entrypoint]
+        C --> D[Authentication & Validation]
+        D -->|Valid| E[LLM Router]
+        D -->|Invalid| Z[❌ Unauthorized]
+        E --> F1[LLM1<br>Local Model]
+        E --> F2[LLM2<br>GPT-3.5]
+        E --> F3[LLM3<br>GPT-4]
+        E --> G[Confidence Evaluation]
+        G --> H[Response Formatter]
+    end
 
-    C -->|Invalid| X[❌ Unauthorized]
-    E1 & E2 & E3 & E4 --> Y[MongoDB Logger]
-    F --> Y
+    A -->|Prompt| C
+    B -->|Prompt| C
+
+    F1 & F2 & F3 --> L[📦 MongoDB<br>Logs & Embeddings]
+    G --> L
+    H --> M[Client Response]
 ```
 
 ## 🧩 Core Components
