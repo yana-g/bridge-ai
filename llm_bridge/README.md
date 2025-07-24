@@ -39,26 +39,45 @@ Bridge AI is ready to use with minimal setup. Here's what it does:
 
 ### Complete System Flow
 
-```
-User Interface (Web/Mobile/API)
-        ↓
-Chat Agent/API Handler
-        ↓
-Bridge AI System
-        ↓
-┌─ User Input → Language Check → Non-English? → Polite "Please use English" response
-│                       ↓ (English)                
-├─ Simple Intent? → Direct Response (greetings, thanks, etc.)
-│
-├─ Cache Hit? → Cached Response
-│
-├─ Need More Info? → Follow-up Questions
-│
-└─ Route to LLM:
-    ├─ Simple Query → GPT-3.5 → Quality Check → Response
-    └─ Complex Query → GPT-4 → Quality Check → Response
-                         ↑
-                    (Upgrade if GPT-3.5 quality low)
+```mermaid
+flowchart TD
+    A[User Interface<br>(Web / Mobile / API)] --> B[Chat Agent / API Handler]
+    B --> C[Bridge AI System]
+
+    C --> D[Language Check]
+    D -->|Non-English| D1["Reply: Please use English"]
+    D -->|English| E[Simple Intent?]
+    E -->|Yes| E1["Return Direct Response"]
+    E -->|No| F[Cache Check]
+
+    F --> F1[In-Memory Cache Hit?]
+    F1 -->|Yes| F2["Return Cached Response"]
+    F1 -->|No| F3[MongoDB Semantic Cache Hit?]
+    F3 -->|Yes| F4["Return Cached Response"]
+    F3 -->|No| G[Prompt Analysis: More Info Needed?]
+
+    G -->|Yes| G1["Generate Follow-Up Question(s)"]
+    G -->|No| H[Route to LLM]
+
+    H --> H1{Query Complexity}
+    H1 -->|Simple| I[Use GPT-3.5]
+    H1 -->|Complex| J[Use GPT-4]
+
+    I --> I1[Evaluate Answer Quality]
+    I1 -->|Low| J
+    I1 -->|Good| K[Return Final Answer]
+
+    J --> J1[Evaluate Answer Quality]
+    J1 --> K
+
+    D1 --> Z[End]
+    E1 --> Z
+    F2 --> Z
+    F4 --> Z
+    G1 --> Z
+    K --> Z
+
+    style Z fill:#f4f4f4,stroke:#ccc
 ```
 
 ### Request Flow
@@ -256,28 +275,6 @@ upgradeable_models = {
 }
 ```
 
-## 📦 Installation
+## 🧪 Testing
 
-### Prerequisites
-
-- Python 3.8+
-- OpenAI API key
-- Required packages (see `requirements.txt`)
-
-## ⚙️ Configuration
-
-### Basic Configuration
-
-```python
-config = {
-    'llm': {
-        'openai_api_key': 'your-api-key',
-        'llm2_model': 'gpt-3.5-turbo',           # Basic model
-        'llm2_model_name': 'GPT-3.5',           # Display name
-        'llm3_model': 'gpt-4',                  # Advanced model
-        'llm3_model_name': 'GPT-4',             # Display name
-        'basic_max_tokens': 500,                # For simple queries
-        'enhanced_max_tokens': 1500,            # For complex queries
-        'temperature': 0.7                      # Creativity level
-    }
-}
+- ℹ️ *Note: Some test cases may require updates. Contributions are welcome.*
