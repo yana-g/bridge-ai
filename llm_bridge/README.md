@@ -52,17 +52,19 @@ flowchart TD
     C --> D[Language Check]
     D -->|Non-English| D1[Reply: Please use English]
     D -->|English| E[Simple Intent?]
-    E -->|Yes| F[Is Math Expression?]
-    F -->|Yes| F1[Solve with math.js]
-    F1 --> B
-    F -->|No| E1[Return Direct Response]
+    E -->|Yes| E1[Return Direct Response]
+    E -->|No| F[Cache Check]
 
-    G --> G1[Local Cache Hit?]
-    G1 -->|Yes| G2[Return Cached Response]
-    G1 -->|No| G3[MongoDB Cache Hit?]
-    G3 -->|Yes| G4[Return Cached Response]
-    G3 -->|No| H[Prompt Analysis]
+    F --> F1[Local Cache Hit?]
+    F1 -->|Yes| F2[Return Cached Response]
+    F1 -->|No| F3[MongoDB Cache Hit?]
+    F3 -->|Yes| F4[Return Cached Response]
+    F3 -->|No| G[Is Math Expression?]
 
+    G -->|Yes| G1[Solve with math.js]
+    G1 --> B
+
+    G -->|No| H[Prompt Analysis]
     H --> H1[More Info Needed?]
     H1 -->|Yes| H2[Generate Follow-Up Question]
     H2 --> B
@@ -79,11 +81,10 @@ flowchart TD
     K --> K1[Evaluate Answer Quality]
     K1 --> L
 
-    %% Return paths to API
     D1 --> B
     E1 --> B
-    G2 --> B
-    G4 --> B
+    F2 --> B
+    F4 --> B
     L --> B
 ```
 
