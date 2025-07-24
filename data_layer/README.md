@@ -23,17 +23,23 @@ flowchart TD
     subgraph MongoDBHandler
         D1[create_user()]
         D2[verify_user()]
-        D3[store_qa()] %% שמירת שאלה-תשובה
-        D4[semantic_search()] %% חיפוש מבוסס embedding
+        D3[store_qa()]
+        D4[semantic_search()]
     end
 
-    B -->|User Registration / Login| D1 & D2
-    C -->|Save & Search QA| D3 & D4
+    B -->|User Registration / Login| D1
+    B -->|User Registration / Login| D2
+    C -->|Save QA| D3
+    C -->|Search QA| D4
 
-    D1 & D2 & D3 & D4 --> E[(MongoDB)]
+    D1 --> E[(MongoDB)]
+    D2 --> E
+    D3 --> E
+    D4 --> E
 
     style E fill:#f4f4f4,stroke:#999,stroke-width:1px
 
+```
 
 ## 🔹 Functionality Table
 
