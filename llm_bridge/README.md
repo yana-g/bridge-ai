@@ -52,13 +52,11 @@ flowchart TD
     C --> D[Language Check]
     D -->|Non-English| D1[Reply: Please use English]
     D -->|English| E[Simple Intent?]
-    E -->|Yes| E1[Return Direct Response]
-    E --> F[Is Math Expression?]
-
+    E -->|Yes| F[Is Math Expression?]
     F -->|Yes| F1[Solve with math.js]
     F1 --> B
+    F -->|No| E1[Return Direct Response]
 
-    F -->|No| G[Cache Check]
     G --> G1[Local Cache Hit?]
     G1 -->|Yes| G2[Return Cached Response]
     G1 -->|No| G3[MongoDB Cache Hit?]
