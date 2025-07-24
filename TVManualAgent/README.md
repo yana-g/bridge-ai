@@ -21,6 +21,7 @@ flowchart TD
     C -->|No Match| E[Call BRIDGE API via api_client.py]
     E --> F[Remote LLM Reasoning]
     F --> G[Return Structured Answer]
+    G --> B
 ```
 
 ## ⚙️ Features
