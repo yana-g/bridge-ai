@@ -5,6 +5,26 @@
 **BRIDGE AI** is a smart and modular router between multiple Language Models (LLMs), designed to analyze incoming prompts, determine confidence levels, and dynamically select the most appropriate model—whether internal or external (e.g., OpenAI’s GPT-3.5/4).  
 The system features real-time logging, semantic caching, intent detection, and a modern UI dashboard for tracing model behavior.
 
+## 📌 Quick Navigation
+
+- [Key Features](#-key-features)
+- [System Architecture](#-system-architecture)
+- [Module Docs](#-module-docs)
+- [Core Components](#-core-components)
+- [Execution Flow Summary](#-execution-flow-summary)
+- [Project Structure](#-project-structure)
+- [Environment Setup](#️-environment-setup)
+- [Running the Application](#-running-the-application)
+- [API Reference](#-api-reference)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
+
+📎 **Module Sub-Docs:**
+- [`llm_bridge/`](./llm_bridge/README.md)
+- [`api/`](./api/README.md)
+- [`data_layer/`](./data_layer/README.md)
+- [`bridge_ui/`](./bridge_ui/README.md)
+
 ## 🚀 Key Features
 
 ### ***🔁 Smart Model Routing***
@@ -92,13 +112,6 @@ subgraph LLM Bridge
 
 end
 ```
-
-## 📂 Module Docs
-
-- [`llm_bridge/`](./llm_bridge/README.md) – Prompt routing & confidence logic  
-- [`api/`](./api/README.md) – FastAPI entrypoint, middleware, auth  
-- [`data_layer/`](./data_layer/README.md) – MongoDB & embedding-based cache  
-- [`bridge_ui/`](./bridge_ui/README.md) – Streamlit-based dashboard
 
 ## 🧩 Core Components
 
@@ -327,6 +340,13 @@ Submit a query to the LLM routing system.
   "follow_up_questions": ["Related question 1", "Related question 2"]
 }
 ```
+
+## 🧪 Testing
+
+Basic unit tests and integration tests are included under the tests/ directory.
+
+⚠️ Note: The current test suite may be outdated and not fully compatible with recent architectural changes (e.g., TVManualAgent, llm_router, updated response structure).
+
 
 ## 📝 License
 
