@@ -45,7 +45,7 @@ flowchart TD
     A2[TVManual Agent]
 
     A1 --> B[Chat Agent / API Handler]
-    A2 --> B
+    A2 --> B[API Handler]
 
     B --> C[Bridge AI System]
 
@@ -89,7 +89,7 @@ flowchart TD
 
 **Step-by-step process:**
 
-1. **User Interface** - Web app, mobile app, or API receives user input
+1. **User** - Web app, or API receives user input
 2. **Chat Agent** - Processes UI request and calls Bridge AI
 3. **Simple Intent Detection** - Handle greetings, thanks, system info directly
 4. **Cache Check** - Look for exact or semantic matches
