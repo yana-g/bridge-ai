@@ -1,6 +1,22 @@
 """
-User authentication and management handler.
-This module provides functions for user registration, authentication, and management.
+User Authentication and Management Handler
+
+This module provides comprehensive user management functionality for the BRIDGE system,
+including user registration, authentication, JWT token handling, and user data management.
+
+Key Features:
+- User registration with secure password hashing
+- JWT-based authentication
+- Password verification and hashing
+- User data management
+- API key generation and rotation
+
+Dependencies:
+    fastapi: Web framework for building APIs
+    passlib: Password hashing library
+    python-jose: JWT token handling
+    pymongo: MongoDB database interface
+    python-dotenv: Environment variable management
 """
 
 import os
@@ -24,7 +40,7 @@ from data_layer.mongoHandler import db_handler
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# JWT Configuration
+# JWT Configuration - Load from environment variables with fallback
 SECRET_KEY = os.getenv("JWT_SECRET", "your-secret-key-here")
 if SECRET_KEY == "your-secret-key-here":
     logger.warning("Using default JWT secret key. This is not secure for production!")
@@ -32,25 +48,34 @@ if SECRET_KEY == "your-secret-key-here":
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# OAuth2 scheme
+# OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Password hashing
+# Password hashing configuration
 pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
+    schemes=["bcrypt"],  # Using bcrypt for secure password hashing
+    deprecated="auto"    # Automatically handle deprecated hashes
 )
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
-    Create a JWT access token.
+    Create a JWT access token with the provided data.
+    
+    This function generates a JWT token that can be used for authenticating API requests.
+    The token includes an expiration time and can contain arbitrary user data.
     
     Args:
-        data: Data to encode in the token
-        expires_delta: Optional expiration time delta
-        
+        data (dict): Dictionary containing the data to encode in the token
+        expires_delta (Optional[timedelta], optional): Token expiration time delta.
+            If not provided, defaults to 15 minutes.
+            
     Returns:
         str: Encoded JWT token
+        
+    Example:
+        >>> token = create_access_token({"sub": "username"}, timedelta(minutes=30))
+        >>> isinstance(token, str)
+        True
     """
     to_encode = data.copy()
     if expires_delta:
@@ -62,7 +87,20 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 def verify_token(token: str) -> Dict[str, Any]:
-    """Verify JWT token and return payload."""
+    """
+    Verify and decode a JWT token.
+    
+    This function validates the token signature and checks its expiration.
+    
+    Args:
+        token (str): JWT token to verify
+        
+    Returns:
+        Dict[str, Any]: Decoded token payload
+        
+    Raises:
+        HTTPException: If token is invalid or expired
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -78,7 +116,20 @@ def verify_token(token: str) -> Dict[str, Any]:
         raise credentials_exception
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
-    """Get current user from JWT token."""
+    """
+    Dependency to get the current authenticated user from a JWT token.
+    
+    This function is designed to be used as a FastAPI dependency to protect routes.
+    
+    Args:
+        token (str): JWT token from the Authorization header
+        
+    Returns:
+        Dict[str, Any]: User information
+        
+    Raises:
+        HTTPException: If authentication fails
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -96,15 +147,29 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any
 
 async def create_user(username: str, email: str, password: str) -> Dict[str, Any]:
     """
-    Create a new user.
+    Create a new user account.
+    
+    This function handles the user registration process, including:
+    - Validating input data
+    - Hashing the password
+    - Storing user data in the database
+    - Generating an API key
     
     Args:
-        username: Username for the new user
-        email: Email for the new user
-        password: Password for the new user
+        username (str): Unique username for the new account
+        email (str): User's email address
+        password (str): Plain text password (will be hashed)
         
     Returns:
-        Dict containing success status and user data or error message
+        Dict[str, Any]: Dictionary containing:
+            - success (bool): Whether the operation was successful
+            - user (dict, optional): User data if successful
+            - error (str, optional): Error message if unsuccessful
+            
+    Example:
+        >>> result = await create_user("testuser", "test@example.com", "password123")
+        >>> result["success"]
+        True
     """
     try:
         # Use the MongoDBHandler's create_user method
@@ -125,18 +190,27 @@ async def create_user(username: str, email: str, password: str) -> Dict[str, Any
         return {"success": False, "error": str(e)}
     except Exception as e:
         logger.error(f"Error creating user: {str(e)}", exc_info=True)
-        return {"success": False, "error": f"Failed to create user: {str(e)}"}
+        return {
+            "success": False, 
+            "error": f"Failed to create user: {str(e)}"
+        }
 
 async def verify_user(username: str, password: str) -> Dict[str, Any]:
     """
-    Verify user credentials.
+    Verify user credentials and return user data if valid.
+    
+    This function checks if the provided username/email and password match
+    a user in the database and updates the last login timestamp.
     
     Args:
-        username: Username or email
-        password: Password to verify
+        username (str): Username or email address
+        password (str): Plain text password to verify
         
     Returns:
-        Dict with success status and user data or error message
+        Dict[str, Any]: Dictionary containing:
+            - success (bool): Whether verification was successful
+            - user (dict, optional): User data if successful
+            - error (str, optional): Error message if unsuccessful
     """
     try:
         # Try to find user by username or email
@@ -150,7 +224,7 @@ async def verify_user(username: str, password: str) -> Dict[str, Any]:
         if not user_doc:
             return {"success": False, "error": "Invalid username or password"}
             
-        # Verify password
+        # Verify password using bcrypt
         from passlib.hash import bcrypt
         if not bcrypt.verify(password, user_doc.get("hashed_password")):
             return {"success": False, "error": "Invalid username or password"}
@@ -175,17 +249,22 @@ async def verify_user(username: str, password: str) -> Dict[str, Any]:
         
     except Exception as e:
         logger.error(f"Error verifying user: {str(e)}", exc_info=True)
-        return {"success": False, "error": "An error occurred during authentication"}
+        return {
+            "success": False, 
+            "error": "An error occurred during authentication"
+        }
 
 async def get_user(identifier: str) -> Optional[Dict[str, Any]]:
     """
-    Get user by ID, username, or email.
+    Retrieve a user by ID, username, or email.
+    
+    This is a flexible lookup function that can find users by different identifiers.
     
     Args:
-        identifier: User ID (as string), username, or email
+        identifier (str): User ID, username, or email address
         
     Returns:
-        User document if found, None otherwise
+        Optional[Dict[str, Any]]: User document if found, None otherwise
     """
     try:
         from bson import ObjectId
@@ -207,15 +286,9 @@ async def get_user(identifier: str) -> Optional[Dict[str, Any]]:
         })
         
         if user_doc:
-            return {
-                "id": str(user_doc["_id"]),
-                "username": user_doc.get("username"),
-                "email": user_doc.get("email"),
-                "api_key": user_doc.get("api_key"),
-                "created_at": user_doc.get("created_at"),
-                "last_login": user_doc.get("last_login"),
-                "is_active": user_doc.get("is_active", True)
-            }
+            # Convert ObjectId to string for JSON serialization
+            user_doc["id"] = str(user_doc.pop("_id"))
+            return user_doc
             
         return None
         
@@ -223,36 +296,57 @@ async def get_user(identifier: str) -> Optional[Dict[str, Any]]:
         logger.error(f"Error getting user {identifier}: {str(e)}", exc_info=True)
         return None
 
-def rotate_api_key(user_id: str) -> Dict[str, Any]:
+async def rotate_api_key(user_id: str) -> Dict[str, Any]:
     """
-    Generate a new API key for the user.
+    Generate a new API key for the specified user.
+    
+    This function creates a new API key and updates the user's record.
+    The old API key will no longer be valid after this operation.
     
     Args:
-        user_id: User ID
+        user_id (str): The ID of the user
         
     Returns:
-        Dict with new API key if successful, error message otherwise
+        Dict[str, Any]: Dictionary containing:
+            - success (bool): Whether the operation was successful
+            - api_key (str, optional): New API key if successful
+            - error (str, optional): Error message if unsuccessful
     """
     try:
-        new_api_key = db_handler.rotate_api_key(user_id)
-        if not new_api_key:
-            return {"success": False, "error": "User not found or API key rotation failed"}
+        # Generate a new API key
+        new_api_key = str(uuid.uuid4())
+        
+        # Update the user's API key in the database
+        result = db_handler.update_user(
+            user_id,
+            {"api_key": new_api_key}
+        )
+        
+        if result:
+            return {
+                "success": True,
+                "api_key": new_api_key
+            }
+        else:
+            return {
+                "success": False,
+                "error": "User not found or update failed"
+            }
             
-        return {
-            "success": True,
-            "message": "API key rotated successfully",
-            "new_api_key": new_api_key
-        }
     except Exception as e:
-        logger.error(f"Error rotating API key: {e}")
-        return {"success": False, "error": "An error occurred while rotating the API key"}
+        logger.error(f"Error rotating API key for user {user_id}: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "error": "An error occurred while rotating the API key"
+        }
 
 # Export the required functions
 __all__ = [
     "create_user", 
     "verify_user", 
-    "get_user", 
-    "rotate_api_key",
+    "get_user",
+    "create_access_token",
+    "verify_token",
     "get_current_user",
-    "verify_token"
+    "rotate_api_key"
 ]

@@ -49,8 +49,13 @@ logs/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# MongoDB
-data/
+# MongoDB data
+/data/
+/mongodb_data/
+
+# But track TVManualAgent/Data
+!TVManualAgent/Data/
+!TVManualAgent/Data/*.pdf
 
 # Python cache
 .mypy_cache/
@@ -232,3 +237,11 @@ __pycache__/
 logs/
 **/logs/
 *.log
+
+# FAISS index files
+*.index
+faiss_index.index
+
+# Pickle files with document data
+*.pkl
+pdf_index.pkl

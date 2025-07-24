@@ -1,4 +1,4 @@
-# 🌐 BRIDGE - Intelligent LLM Routing System v2.2
+# 🌐 BRIDGE AI - Intelligent LLM Routing System
 
 > An advanced AI routing system that intelligently directs user queries to the most appropriate language model based on complexity, context, and quality requirements.
 
@@ -34,7 +34,7 @@
    - Semantic search capabilities
    - User and conversation history storage
 
-4. **User Interface** (`ui/`)
+4. **User Interface** (`bridge_ui/`)
    - Streamlit-based web interface
    - Responsive design for various devices
    - Real-time chat interface
@@ -81,7 +81,8 @@ graph LR
 ### Quick Start
 
 1. **Clone and set up the repository**
-   ```bash
+   
+```bash
    git clone https://github.com/yourusername/bridge-ai.git
    cd BRIDGE
    
@@ -92,11 +93,11 @@ graph LR
    
    # Install dependencies
    pip install -r requirements.txt
-   ```
 
 2. **Configure environment variables**
-   Create a `.env` file with required settings:
-   ```env
+   Create a .env file with required settings:
+   
+env
    # Required
    OPENAI_API_KEY=your_openai_api_key
    MONGODB_URI=mongodb://localhost:27017/bridge
@@ -105,20 +106,26 @@ graph LR
    # Optional
    CACHE_TTL=86400  # 24 hours
    LOG_LEVEL=INFO
-   ```
+
 
 ## 🚀 Running the Application
 
 ### Start the API Server
 ```bash
-python -m uvicorn api.entry_point_api:app --reload --port 8000
+export PYTHONPATH=$PWD
+python -m api.entry_point_api --reload --port 8000 
 ```
 
-### Start the Web UI
+### Start the Web Bridge UI
 ```bash
-streamlit run ui/loginUI.py
+streamlit run bridge_ui/loginUI.py
 ```
 
+### Start the TV Manual Agent
+```bash
+streamlit run TVManualAgent/main.py
+```
+  
 ## 📚 Project Structure
 
 ```
@@ -148,11 +155,11 @@ BRIDGE_v2.2.1/
 │   ├── __init__.py
 │   └── mongoHandler.py    # MongoDB operations
 │
-├── ui/                    # Web interface
-│   ├── chat/             # Chat interface components
-│   ├── dashboard/        # Dashboard components
-│   ├── static/           # Frontend assets
-│   └── __init__.py
+├── bridge_ui/             # Web interface
+│   ├── chatUI.py         # Main chat interface
+│   ├── loginUI.py        # User authentication
+│   ├── static/           # Frontend assets (CSS, JS, images)
+│   └── __init__.py       # Package initialization
 │
 ├── cache/                # Cache storage
 ├── logs/                 # Application logs
@@ -218,20 +225,6 @@ All API endpoints (except `/health`) require authentication via API key in the `
 | **Technical/Development** | Code-focused explanations | Software development, technical docs |
 | **Daily/General** | Casual, conversational tone | Everyday questions, general chat |
 | **Creative/Emotional** | Expressive, empathetic responses | Creative writing, emotional support |
-
-## 🧪 Testing
-
-Run the test suite:
-```bash
-# Install test dependencies
-pip install -r requirements-test.txt
-
-# Run all tests
-pytest
-
-# Run specific test file
-pytest tests/test_llm_bridge.py -v
-```
 
 ## 🛡️ Security Considerations
 

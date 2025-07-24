@@ -2,6 +2,18 @@
 
 A FastAPI-based service that provides a structured interface for interacting with Large Language Models (LLMs). The API handles authentication, request validation, and response formatting, making it easy to integrate LLM capabilities into your applications.
 
+```mermaid
+graph TD
+    A[Client] -->|Request| B[API Gateway]
+    B --> C[Authentication Middleware]
+    C -->|Valid| D[Request Router]
+    D --> E[LLM Processing]
+    E --> F[Response Formatter]
+    F -->|Response| A
+    C -->|Invalid| G[Error Response]
+    G --> A
+```
+
 ## 🌟 Features
 
 - **Structured Requests**: Send well-formatted prompts with configurable parameters
@@ -37,8 +49,8 @@ A FastAPI-based service that provides a structured interface for interacting wit
 
 Once the API is running, you can access:
 
-- **Interactive API Docs**: `http://localhost:8000/docs`
-- **Alternative API Docs**: `http://localhost:8000/redoc`
+- **Interactive API Docs (Swagger UI)**: `http://localhost:8000/docs`
+- **Alternative API Docs (ReDoc)**: `http://localhost:8000/redoc`
 
 ## 🔑 Authentication
 
@@ -47,14 +59,21 @@ The API uses API Key and Username authentication. Include both in the request he
 - `X-API-Key`: Your API key
 - `X-Username`: Your username (must match the username associated with the API key)
 
-Example:
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant DB
+    
+    Client->>API: Request with X-API-Key & X-Username
+    API->>DB: Validate credentials
+    DB-->>API: User data
+    alt Valid Credentials
+        API-->>Client: 200 Success
+    else Invalid Credentials
+        API-->>Client: 401 Unauthorized
+    end
 ```
-GET /health
-X-API-Key: your-api-key
-X-Username: admin
-```
-
-**Note:** Both headers are required for all authenticated endpoints. Missing or invalid credentials will result in a `401 Unauthorized` response.
 
 ## 🛠️ Endpoints
 
@@ -64,142 +83,120 @@ X-Username: admin
 GET /health
 ```
 
-Check if the API is running and its current status.
-
-**Headers: (Authentication required)**
-- `X-API-Key`: Your API key
-- `X-Username`: Your username
-
 **Response:**
 ```json
 {
-  "status": "ok",
-  "environment": "development",
-  "version": "1.0.0"
+    "status": "healthy",
+    "version": "2.2.1",
+    "timestamp": "2025-07-23T16:00:00.000Z"
+}
+```
+
+### Register New User
+
+```
+POST /register
+```
+
+**Request Body:**
+```json
+{
+    "username": "newuser",
+    "password": "securepassword123",
+    "email": "user@example.com"
+}
+```
+
+### Login
+
+```
+POST /login
+```
+
+**Request Body:**
+```json
+{
+    "username": "existinguser",
+    "password": "userpassword"
 }
 ```
 
 ### Ask LLM
 
 ```
-POST /ask-llm/
+POST /ask-llm
 ```
 
-Send a question to the LLM and get a response.
-
-**Headers: (Authentication required)**
+**Request Headers:**
 - `X-API-Key`: Your API key
 - `X-Username`: Your username
-- `Content-Type`: application/json
 
 **Request Body:**
 ```json
 {
-  "vibe": "Business/Professional",
-  "sender_id": "user123",
-  "question_id": "unique-id-123",
-  "question": "What is the capital of France?",
-  "confidence": true,
-  "nature_of_answer": "Medium"
+    "vibe": "Technical/Development",
+    "question": "How do I implement JWT authentication?",
+    "confidence": true,
+    "nature_of_answer": "Detailed"
 }
 ```
 
-**Response:**
-```json
-{
-  "response": "The capital of France is Paris.",
-  "vibe_used": "Business/Professional",
-  "question_id": "unique-id-123",
-  "sender_id": "user123",
-  "model_metadata": {}
-}
+## 🔄 API Flow
+
+```mermaid
+flowchart LR
+    A[Client Request] --> B{Authentication}
+    B -->|Valid| C[Process Request]
+    C --> D[Route to Handler]
+    D --> E[Validate Input]
+    E --> F[Process with LLM]
+    F --> G[Format Response]
+    G --> H[Return to Client]
+    B -->|Invalid| I[Return 401 Unauthorized]
+    E -->|Invalid| J[Return 400 Bad Request]
 ```
 
-**Possible Error Responses:**
-- `400 Bad Request`: Invalid request body
-- `401 Unauthorized`: Missing or invalid authentication
-- `422 Unprocessable Entity`: Missing required fields or invalid data format
-- `500 Internal Server Error`: Server error while processing the request
+## 📊 Error Handling
+
+The API returns appropriate HTTP status codes and JSON error responses:
+
+| Status Code | Description                  | Example Response                      |
+|-------------|------------------------------|---------------------------------------|
+| 400         | Bad Request                  | `{"detail": "Invalid request format"}` |
+| 401         | Unauthorized                 | `{"detail": "Invalid API key"}`       |
+| 404         | Not Found                    | `{"detail": "Endpoint not found"}`    |
+| 422         | Validation Error             | `{"detail": [{"loc": ["string"], ...}]}` |
+| 500         | Internal Server Error        | `{"detail": "Internal server error"}` |
+
+## 📈 Rate Limiting
+
+```mermaid
+gantt
+    title API Rate Limits
+    dateFormat  HH:mm:ss
+    axisFormat %H:%M
+    
+    section Requests
+    Request 1  :a1, 2025-07-23T10:00:00, 1s
+    Request 2  :a2, after a1, 1s
+    Request 3  :a3, after a2, 1s
+    Limit Reached :crit, active, after a3, 1s
+    
+    section Reset
+    Counter Reset :crit, 2025-07-23T10:01:00, 1s
+```
+
+Current rate limits:
+- 60 requests per minute per API key
+- 1000 requests per day per user
 
 ## 🧪 Testing
 
 Run the test suite with:
-
 ```bash
-pytest tests/ -v
+pytest api/tests/
 ```
 
-### Test Coverage
-
-The test suite includes:
-- Authentication and authorization tests
-- Request validation tests
-- Error handling tests
-- End-to-end API tests
-
-To run tests with coverage report:
-
-```bash
-pytest --cov=api tests/
-```
-
-## 🧩 Project Structure
-
-```
-api/
-├── __init__.py
-├── entry_point_api.py      # Main FastAPI application and routes
-├── authHandler.py         # Authentication and authorization logic
-├── middleware/            # Custom middleware
-│   └── validation.py      # Request validation
-├── tests/                 # Test files
-│   ├── __init__.py
-│   ├── conftest.py        # Test fixtures and mocks
-│   └── test_core.py       # Test cases
-├── .env.example          # Example environment variables
-├── requirements.txt       # Project dependencies
-└── README.md             # This file
-```
-
-## 🔄 API Versioning
-
-The API follows semantic versioning (SemVer). The current version is v1.
-
-## 📈 Monitoring and Logging
-
-All API requests are logged with the following information:
-- Request method and path
-- Client IP address
-- Request ID for tracing
-- Processing time
-- Response status code
-- Error messages (if any)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-**Development Requirements:**
-- All code must have corresponding tests
-- Follow PEP 8 style guide
-- Update documentation for any API changes
-- Ensure all tests pass before submitting a PR
-
-## 📄 License
+## � License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [FastAPI](https://fastapi.tiangolo.com/)
-- Uses [MongoDB](https://www.mongodb.com/) for data storage
-- [Pytest](https://docs.pytest.org/) for testing
-- [HTTPX](https://www.python-httpx.org/) for async HTTP client
-
----
-
-*Last updated: June 2025*

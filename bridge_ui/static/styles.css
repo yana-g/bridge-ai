@@ -1,0 +1,302 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Main layout container */
+.main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: white;
+}
+
+/* Fixed header at top */
+.header-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 20px 0 0px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.header-section h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: #333;
+}
+
+.header-section p {
+    font-size: 1rem;
+    color: #666;
+    margin-top: -0.8rem;
+}
+
+/* Scrollable area between header and input */
+.chat-area-wrapper {
+    position: absolute;
+    top: 80px;       
+    bottom: 140px !important;    
+    overflow-y: auto;
+    left: 0;
+    right: 0;
+    padding: 1rem 2rem;
+}
+
+/* Chat history layout */
+.chat-history {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem;
+}
+
+/* Chat message styles */
+.chat-message {
+    max-width: 85%;
+    padding: 1rem;
+    border-radius: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    border: 1px solid #e3e3e3;
+    background-color: #f2f3f5;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.user-message {
+    align-self: flex-end !important;
+    margin-left: auto !important;
+    background-color: #e0ecff;
+    border-color: #c2d8ff;
+    text-align: right;  
+    width: fit-content;
+}
+
+.ai-message {
+    align-items: flex-start !important;
+    background-color: #f9f9f9;
+    border-color: #e5e5e5;
+    width: fit-content;
+}
+
+.message-header {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+.message-content {
+    white-space: pre-line !important;
+    line-height: 1.4;
+    margin-bottom: 0.1rem;
+    word-wrap: break-word;
+    overflow: visible;
+    padding-bottom: 0;      /* Remove any padding */
+}
+
+.message-time {
+    font-size: 0.6875rem;
+    color: #999;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.follow-up-section {
+    margin-top: -1.5rem;  /* Increased from -0.75rem */
+    padding-top: 0.1rem;  /* Reduced from 0.25rem */
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.follow-up-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 0.15rem 0;  
+}
+
+.follow-up-header {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.15rem;  
+    font-weight: 500;
+}
+
+.follow-up-list {
+    margin: 0.15rem 0 0 0;  
+    padding-left: 1rem;
+    list-style-type: none;
+}
+
+.follow-up-list li {
+    margin: 0.4rem 0;
+    color: #2b6cb0;
+    font-size: 0.9rem;
+    position: relative;
+    padding-left: 1.25rem;
+}
+
+.follow-up-list li:before {
+    content: "•";
+    color: #4a90e2;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.follow-up-list li:hover {
+    color: #1a4b8c;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Form styling */
+.stForm {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    padding: 20px !important;
+    z-index: 9999 !important;
+    border-top: 1px solid #e0e0e0 !important;
+
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.stForm > div {
+    width: 100%;
+    max-width: 700px;
+}
+
+.stTextArea > div > div > textarea {
+    height: 50px !important;
+    border-radius: 25px !important;
+    border: 1px solid #d1d5db !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    resize: none !important;
+    outline: none !important;
+    width: 100% !important;
+}
+
+/* Sidebar styles */
+[data-testid="stSidebar"] {
+    min-width: 80px !important;
+    max-width: 220px !important;
+    background: linear-gradient(180deg, #f8f9fb 0%, #e3e8ef 100%) !important;
+    border-right: 1px solid #e0e0e0 !important;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 6px rgba(0,0,0,0.03);
+}
+
+[data-testid="stSidebar"]:hover {
+    min-width: 220px !important;
+}
+
+/* Row with username + logout */
+.sidebar-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 12px;
+    gap: 0.5rem;
+    max-width: 100%;
+    flex-wrap: nowrap;
+}
+
+/* Username style with overflow protection */
+.sidebar-username {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+    max-width: 130px;
+}
+
+/* Logout link styled as underline text */
+.logout-link {
+    background: none;
+    border: none;
+    color: #4a6cf7;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.logout-link:hover {
+    color: #3a5bd9;
+    text-decoration: underline;
+}
+
+/* Fix hover flicker on st.button */
+.stButton > button {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.stButton > button:hover {
+    background-color: #f2f2f2;
+    border-color: #888;
+    color: #000;
+}
+
+/* === CODE BLOCKS === */
+.code-block {
+    background-color: #f4f4f4;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-family: "Courier New", monospace;
+    color: #2d2d2d;
+    white-space: pre;
+    margin-top: 0.5rem;
+}
+
+.code-block pre {
+    margin: 0;
+    white-space: pre;
+}
+
+.code-block code {
+    font-family: inherit;
+    background: none;
+    color: inherit;
+    padding: 0;
+}
+
+/* Inline code (`example`) */
+code {
+    background-color: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: "Courier New", monospace;
+}

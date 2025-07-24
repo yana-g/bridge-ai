@@ -11,4 +11,23 @@ passlib[bcrypt]==1.7.4  # For password hashing
 langdetect==1.0.9
 
 # UI
-streamlit==1.32.0
+streamlit==1.32.0  # שדרוג מהגרסה 1.28.0 בפרויקט TV
+
+# PDF processing
+PyPDF2==3.0.1
+
+# LLMs & Transformers
+transformers==4.35.0
+torch==2.1.0
+sentence-transformers==2.2.2
+tiktoken==0.5.1
+accelerate==0.24.0
+bitsandbytes==0.41.2
+
+# Vector DB / Embedding Search
+faiss-cpu==1.7.4
+
+# LangChain & Chroma ecosystem
+langchain==0.0.350
+langchain-community==0.0.10
+chromadb==0.4.18
