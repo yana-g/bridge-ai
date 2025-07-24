@@ -70,7 +70,7 @@ subgraph LLM Bridge
     H --> I[Receive Answer + Confidence Score]
     I --> J{Confidence < Threshold?}
     
-    J -->|Yes| K[Upgrade to Stronger LLM (e.g. LLM3)]
+    J -->|Yes| K[Upgrade to Stronger LLM - e.g. LLM3]
     K --> I
 
     J -->|No| L[Evaluate Answer Quality]
@@ -79,7 +79,6 @@ subgraph LLM Bridge
     M --> O[Return Final Answer to Client]
 
 end
-
 ```
 
 ## 🧩 Core Components
