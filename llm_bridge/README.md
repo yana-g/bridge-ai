@@ -41,7 +41,7 @@ Bridge AI is ready to use with minimal setup. Here's what it does:
 
 ```mermaid
 flowchart TD
-    A[User Interface<br>Web / Mobile / API] --> B[Chat Agent / API Handler]
+    A[User Interface] --> B[Chat Agent / API Handler]
     B --> C[Bridge AI System]
 
     C --> D[Language Check]
@@ -56,7 +56,7 @@ flowchart TD
     F3 -->|Yes| F4[Return Cached Response]
     F3 -->|No| G[Prompt Analysis: More Info Needed?]
 
-    G -->|Yes| G1[Generate Follow-Up Question(s)]
+    G -->|Yes| G1[Generate Follow-Up Question]
     G -->|No| H[Route to LLM]
 
     H --> H1{Query Type}
