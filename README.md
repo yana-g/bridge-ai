@@ -1,253 +1,280 @@
 # 🌐 BRIDGE AI - Intelligent LLM Routing System
 
-> An advanced AI routing system that intelligently directs user queries to the most appropriate language model based on complexity, context, and quality requirements.
+## 📌 Overview
+
+**BRIDGE AI** is a smart and modular router between multiple Language Models (LLMs), designed to analyze incoming prompts, determine confidence levels, and dynamically select the most appropriate model—whether internal or external (e.g., OpenAI’s GPT-3.5/4).  
+The system features real-time logging, semantic caching, intent detection, and a modern UI dashboard for tracing model behavior.
 
 ## 🚀 Key Features
 
-- **Smart Model Routing**: Dynamically routes queries to optimal LLMs (GPT-3.5, GPT-4, etc.) based on complexity, context, and quality requirements.
-- **Quality Assessment**: Continuously evaluates response quality and can upgrade to more capable models when needed.
-- **Context-Aware Processing**: Supports multiple conversation styles (Academic, Business, Technical, etc.) with specialized handling for each.
-- **Semantic Caching**: Reduces API calls and improves response times through intelligent caching of similar queries.
-- **Modular Architecture**: Clean separation of concerns with distinct components for API, LLM routing, and data persistence.
-- **Secure Authentication**: JWT-based API key authentication with secure credential handling.
-- **Extensible Design**: Easy to add new LLM providers, analysis modules, or storage backends.
+***🔁 Smart Model Routing***
+- Dynamically routes queries to the optimal LLM (e.g., GPT-3.5, GPT-4, or custom local models) based on complexity, context, intent, and required confidence.
+***🧠 Context-Aware Processing***
+- Supports multiple response vibes (Academic, Business, Technical, Creative, etc.), with tailored prompting and formatting for each.
+***🧭 Intent & Language Detection***
+- Automatically detects user intent and input language to route the query or flag unsupported inputs (currently English-only).
+***🧠 Confidence Scoring & Model Escalation***
+- Parses confidence levels from model output via [CONFIDENCE:X.XX] tag. If confidence is low, BRIDGE can escalate to a more capable LLM.
+***💾 Semantic Caching (MongoDB)***
+- Uses embeddings to detect similar past queries and return cached results — improving latency and reducing token costs.
+***🧮 Token-Aware Logging***
+- Tracks token usage for each request, including breakdown by prompt and completion. Enables monitoring and rate limiting.
+***🔐 Secure Authentication***
+- Supports API Key-based access with optional JWT and granular user/agent validation. Includes rotating API keys, logging, and guest modes.
+***🧩 Modular Architecture***
+- Clean separation between:
+    - API logic (entry_point_api.py)
+    - User/Auth management (userHandler.py, authHandler.py)
+    - LLM bridging (bridge.py)
+    - Data persistence (mongoHandler.py)    
+***📊 Real-Time Logging & Monitoring***
+- All interactions are logged via middleware, including request metadata, response time, and exceptions. Optional log rotation is built-in.
+***🧠 Chain-of-Thought (CoT) Ready***
+- Future-ready structure allows integration of multi-step reasoning and explanation generation.
+***💡 Extensible by Design***
+- New models, storage layers, or analysis modules can be added with minimal changes. Easily pluggable with tools like RAG, LangChain, or stream processors.
+***🖥️ Optional UI Dashboard (Streamlit)***
+- When enabled, displays chat logs, vibe selectors, confidence gauges, and usage statistics in a clean front-end.
 
 ## 🏗 System Architecture
 
-### Core Components
+```mermaid
+flowchart TD
+    A[User / Client App] -->|Prompt| B[API Layer<br>FastAPI]
+    subgraph API Layer
+        B --> C[Authentication & Validation]
+        C -->|Valid| D[LLM Router]
+        D -->|Route| E1[LLM1<br>Local Model]
+        D -->|Route| E2[LLM2<br>GPT-3.5]
+        D -->|Route| E3[LLM3<br>GPT-4]
+        D -->|Route| E4[TVMANUAL_AGENT<br>Specialized Agent]
+        D --> F[Confidence Evaluation]
+    end
 
-1. **LLM Bridge** (`llm_bridge/`)
-   - `bridge.py`: Orchestrates the entire query processing pipeline
-   - `llm_router.py`: Routes queries to appropriate LLM models
-   - `prompt_analyzer.py`: Analyzes prompt complexity and requirements
-   - `answer_evaluator.py`: Assesses response quality and suggests improvements
-   - `cache_manager.py`: Manages both exact and semantic caching
+    F --> G[Response Formatter]
+    G --> H[Client Response]
+
+    C -->|Invalid| X[❌ Unauthorized]
+    E1 & E2 & E3 & E4 --> Y[MongoDB Logger]
+    F --> Y
+```
+
+## 🧩 Core Components
+
+1. **LLM Bridge Layer** (`llm_bridge/`)
+- Orchestrates the entire flow from query intake to LLM output formatting.
+| Module                | Functionality                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `bridge.py`           | Central orchestrator of the query pipeline. Receives all inputs and returns structured responses.                   |
+| `llm_router.py`       | Smart routing between LLM1, LLM2, LLM3, and `TVManualAgent` based on intent, complexity, confidence, and user type. |
+| `prompt_analyzer.py`  | Parses the question to assess its complexity and tone.                                                              |
+| `prompt_enhancer.py`  | Refines prompts for clarity, depth, or Chain-of-Thought enhancement.                                                |
+| `answer_evaluator.py` | Evaluates LLM responses using heuristic and statistical methods; can trigger re-routing.                            |
+| `cache_manager.py`    | Manages both exact-match and embedding-based semantic caching (MongoDB).                                            |
+| `output_manager.py`   | Formats, normalizes, and packages the final response for UI/API consumption.                                        |
 
 2. **API Layer** (`api/`)
-   - FastAPI-based RESTful API
-   - JWT authentication
-   - Request validation and logging middleware
-   - User management endpoints
+- Exposes the system via a secure, flexible FastAPI backend.
+| Functionality        | Details                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `/ask-llm/` endpoint | Accepts question payloads, injects vibe, processes via `bridge.py`, and returns full response.           |
+| Auth & headers       | API Key via `X-API-Key`, optional `X-Username` or `X-Agent-ID` for role control.                         |
+| Auth modules         | `authHandler.py`, `userHandler.py`, `agentHandler.py` — with JWT fallback, key rotation, and guest mode. |
+| Middleware           | Logs every request/response, tracks timing and errors, limits usage.                                     |
+| Rate limiting        | Built-in logic for throttling based on user tokens.                                                      |
+| Validation           | Pydantic models ensure every payload is safe and well-structured.                                        |
 
 3. **Data Layer** (`data_layer/`)
-   - MongoDB integration with connection pooling
-   - Semantic search capabilities
-   - User and conversation history storage
+- Provides persistent storage and caching.
+| Module            | Capability                                                          |
+| ----------------- | ------------------------------------------------------------------- |
+| `mongoHandler.py` | Handles chat logs, embeddings, cache checks, user and session data. |
+| Indexes           | Embedding-based for semantic cache                                  |
+| Models            | `chat_logs`, `users`, `tokens`, and `agents` collections            |
+| Connection        | Pooled and retry-backed using `pymongo`                             |
+
 
 4. **User Interface** (`bridge_ui/`)
-   - Streamlit-based web interface
-   - Responsive design for various devices
-   - Real-time chat interface
+- Optional real-time UI via Streamlit.
+| Feature    | Description                                    |
+| ---------- | ---------------------------------------------- |
+| UI         | Streamlit-based web interface                  |
+| Responsive | Real-time chat interface                       |
+| Authentication | User authentication and session management |
 
-## 🔄 Routing Flow Overview
+5. **TV Manual Agent** (`TVManualAgent/`)
+- A custom AI module designed to answer TV manual–related questions.
+| Feature         | Description                                                                             |
+| --------------- | --------------------------------------------------------------------------------------- |
+| Input source    | PDF manuals of various TV models                                                        |
+| Function        | Parses, indexes and semantically searches content                                       |
+| Integration     | Plugged into `llm_router.py` as `LLM4` / route condition                                |
+| Typical use     | If user question includes device keywords or instructions like "how to reset LG remote" |
 
-This section illustrates the internal flow of query processing in the BRIDGE system — from the moment a user submits a question, through analysis, routing, and response generation.
+## 🧠 Execution Flow Summary
 
-### 📈 Sequence Diagram
+1. A prompt is received via the public API (/ask-llm) — either from:
+    - A regular user (via UI or HTTP client)
+    - An external agent such as TVManualAgent
+2. The API layer authenticates the request (X-API-Key, X-Agent-ID or X-Username)
+3. The system analyzes:
+    - Intent
+    - Language
+    - Vibe (response style)
+    - Nature of answer (Short / Medium / Detailed)
+4. The LLMRouter determines how to process the query:
+    - Check if a cached semantic match exists (exact/embedding)
+    - If not cached: route to a selected LLM:  
+        - LLM1 — Local model
+        - LLM2 / LLM3 — External APIs (e.g. GPT-3.5, GPT-4)
+5. The selected LLM generates a response
+    - If configured, confidence is appended as [CONFIDENCE:0.XX]
+6. The system:
+    - Parses the confidence
+    - Optionally re-routes if confidence is low
+    - Logs tokens, user/agent, embeddings, timestamp
+7. The final structured response is returned to:
+    - The user
+    - Or to the agent, e.g., TVManualAgent, which can use it as fallback
 
-```mermaid
-graph LR
-    A[User Query] --> B[Prompt Analyzer]
-    B --> C[Cache Manager]
-    B --> D[LLM Router]
-    C --> D
-    D --> E[Answer Evaluator]
-    E --> F[Output Manager]
-    F --> G[Streamlit UI]
-```
-### 🧭 Step-by-Step Flow
-
-1. ***User submits a query*** — including optional metadata such as vibe, confidence, or nature_of_answer.
-
-2. ***Prompt Analyzer (prompt_analyzer.py)*** determines the intent, complexity, and style of the input.
-
-3. ***Cache Manager (cache_manager.py)*** checks for matching or semantically similar cached responses to reduce unnecessary API calls.
-
-4. ***LLM Router (llm_router.py)*** selects the most appropriate model (e.g., GPT-3.5, GPT-4) based on the analysis.
-
-5. ***Answer Evaluator (answer_evaluator.py)*** assesses the generated response for quality, coherence, and alignment with expectations.
-
-6. ***Output Manager (output_manager.py)*** formats the final output (e.g., code blocks, follow-ups) and returns it to the UI.
-
-7. ***UI Display (Streamlit)*** renders the response in a real-time chat interface.
-
-## 🛠 Installation & Setup
-
-### Prerequisites
-- Python 3.8+
-- MongoDB instance (local or cloud)
-- OpenAI API key
-
-### Quick Start
-
-1. **Clone and set up the repository**
-   
-```bash
-   git clone https://github.com/yourusername/bridge-ai.git
-   cd BRIDGE
-   
-   # Create and activate virtual environment
-   python -m venv venv
-   .\venv\Scripts\activate  # Windows
-   source venv/bin/activate   # macOS/Linux
-   
-   # Install dependencies
-   pip install -r requirements.txt
-
-2. **Configure environment variables**
-   Create a .env file with required settings:
-   
-env
-   # Required
-   OPENAI_API_KEY=your_openai_api_key
-   MONGODB_URI=mongodb://localhost:27017/bridge
-   SECRET_KEY=your_secure_secret_key
-   
-   # Optional
-   CACHE_TTL=86400  # 24 hours
-   LOG_LEVEL=INFO
-
-
-## 🚀 Running the Application
-
-### Start the API Server
-```bash
-export PYTHONPATH=$PWD
-python -m api.entry_point_api --reload --port 8000 
-```
-
-### Start the Web Bridge UI
-```bash
-streamlit run bridge_ui/loginUI.py
-```
-
-### Start the TV Manual Agent
-```bash
-streamlit run TVManualAgent/main.py
-```
-  
 ## 📚 Project Structure
 
-```
 BRIDGE_v2.2.1/
-├── api/                    # API implementation
+├── api/                    # FastAPI application
 │   ├── __init__.py
-│   ├── entry_point_api.py  # Main API endpoints
-│   ├── authHandler.py      # Authentication logic
-│   ├── userHandler.py      # User management
-│   ├── middleware/         # Request processing middleware
-│   ├── logs/              # API logs
-│   └── tests/             # API test suite
+│   ├── main.py            # API entry point
+│   ├── dependencies.py     # Dependency injection
+│   ├── routes/            # API endpoints
+│   └── models/            # Pydantic models
 │
-├── llm_bridge/            # Core routing and processing logic
+├── llm_bridge/            # Core routing logic
 │   ├── __init__.py
 │   ├── bridge.py          # Main orchestrator
 │   ├── llm_router.py      # Model routing
 │   ├── prompt_analyzer.py # Prompt analysis
-│   ├── prompt_enhancer.py # Prompt enhancement
 │   ├── answer_evaluator.py # Response evaluation
-│   ├── response_classifier.py # Response classification
 │   ├── cache_manager.py   # Caching system
-│   ├── output_manager.py  # Response formatting
-│   └── test/             # Test suite
+│   └── output_manager.py  # Response formatting
 │
 ├── data_layer/            # Data persistence
 │   ├── __init__.py
-│   └── mongoHandler.py    # MongoDB operations
+│   ├── mongoHandler.py    # MongoDB operations
+│   └── models/            # Data models
 │
 ├── bridge_ui/             # Web interface
-│   ├── chatUI.py         # Main chat interface
-│   ├── loginUI.py        # User authentication
-│   ├── static/           # Frontend assets (CSS, JS, images)
-│   └── __init__.py       # Package initialization
+│   ├── __init__.py        # Main orchestrator
+│   ├── loginUI.py         # Authentication UI
+│   ├── chatUI.py          # Chat interface
+│   └── static/            # Frontend assets
 │
-├── cache/                # Cache storage
-├── logs/                 # Application logs
-└── requirements.txt      # Python dependencies
+├── TVManualAgent/         # TV Manual Agent    
+│   ├── __init__.py        # Main orchestrator  
+│   ├── Data/              # PDF files
+│   ├── llm_load.py        # LLM loading
+│   ├── pdf_load.py        # PDF loading
+│   └── main.py            # Main app
+│
+├── tests/                 # Test suite
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── conftest.py        # Test fixtures
+│
+├── docs/                  # Documentation
+│   ├── api/               # API documentation
+│   └── guides/            # Usage guides
+│
+├── .env.example           # Environment template
+├── requirements.txt       # Python dependencies
+├── README.md              # This file
+└── PROJECT_SPEC.md        # Detailed specification
 ```
 
-## 🔍 API Documentation
+## ⚙️ Environment Setup
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update the `.env` file with your configuration:
+   ```env
+   # API Configuration
+   API_HOST=0.0.0.0
+   API_PORT=8000
+   DEBUG=True
+   
+   # Authentication
+   SECRET_KEY=your-secret-key-here
+   ACCESS_TOKEN_EXPIRE_MINUTES=1440  # 24 hours
+   
+   # MongoDB
+   MONGODB_URL=mongodb://localhost:27017/
+   MONGODB_DB_NAME=bridge_db
+   
+   # LLM Providers
+   OPENAI_API_KEY=your-openai-key
+   ANTHROPIC_API_KEY=your-anthropic-key
+   
+   # Caching
+   CACHE_ENABLED=True
+   CACHE_TTL=3600  # 1 hour
+   ```
+
+## 🚀 Running the Application
+
+### Prerequisites
+- Python 3.9+
+- MongoDB (local or remote)
+- Required Python packages (install via `pip install -r requirements.txt`)
+
+### Starting the API Server
+```bash
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Starting the Web UI
+```bash
+streamlit run bridge_ui/chatUI.py
+```
+
+### Running the TV Manual Agent
+```bash
+streamlit run TVManualAgent/main.py
+```
+
+## 🔍 API Reference
 
 ### Authentication
-All API endpoints (except `/health`) require authentication via API key in the `X-API-Key` header.
+All API endpoints require authentication via JWT token. Include the token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
 
-### Available Endpoints
+### Key Endpoints
 
-#### Health Check
-- `GET /health`
-  - Verify API status and database connectivity
-  - No authentication required
+#### POST /api/v1/ask
+Submit a query to the LLM routing system.
 
-#### User Management
-- `POST /register`
-  - Register a new user account
-  - Returns: API key for authentication
+**Request Body:**
+```json
+{
+  "prompt": "Your question here",
+  "context": "Additional context if any",
+  "vibe": "professional",
+  "model_preference": "auto"
+}
+```
 
-- `POST /login`
-  - Authenticate and receive API key
-  - Returns: API key for authentication
-
-#### LLM Interaction
-- `POST /ask-llm`
-  - Process a natural language query
-  - Required fields:
-    ```json
-    {
-      "vibe": "Academic/Research",
-      "sender_id": "user123",
-      "question": "Explain quantum computing",
-      "confidence": true,
-      "nature_of_answer": "Detailed"
-    }
-    ```
-  - Returns: 
-    ```json
-    {
-      "response": "Detailed explanation...",
-      "vibe_used": "Academic/Research",
-      "question_id": "abc123",
-      "model_metadata": {
-        "model_used": "gpt-4",
-        "processing_time": 1.23,
-        "cache_hit": false
-      },
-      "follow_up_questions": ["What are qubits?", "How does quantum entanglement work?"],
-      "needs_more_info": false
-    }
-    ```
-
-## 🤖 Supported Vibe Modes
-
-| Vibe | Description | Best For |
-|------|-------------|----------|
-| **Academic/Research** | Detailed, citation-heavy responses | Research papers, academic work |
-| **Business/Professional** | Formal, strategic business language | Business communications, reports |
-| **Technical/Development** | Code-focused explanations | Software development, technical docs |
-| **Daily/General** | Casual, conversational tone | Everyday questions, general chat |
-| **Creative/Emotional** | Expressive, empathetic responses | Creative writing, emotional support |
-
-## 🛡️ Security Considerations
-
-- All API keys are stored securely using environment variables
-- Passwords are hashed using bcrypt before storage
-- JWT tokens are used for authenticated sessions
-- Input validation is performed on all API endpoints
-- CORS is enabled with appropriate security headers
-
-## 📈 Performance
-
-- Response times typically under 2 seconds for most queries
-- Semantic caching reduces duplicate API calls
-- Connection pooling for database operations
-- Asynchronous processing for non-blocking I/O
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+**Response:**
+```json
+{
+  "response": "The generated response",
+  "model_used": "gpt-4",
+  "confidence": 0.95,
+  "sources": ["source1.pdf", "source2.pdf"],
+  "follow_up_questions": ["Related question 1", "Related question 2"]
+}
+```
 
 ## 📝 License
 
@@ -274,3 +301,4 @@ Special thanks to [**Arik Vaserman**](https://www.linkedin.com/in/arik-vaserman-
 - Semantic search using [Sentence Transformers](https://www.sbert.net/)
 - MongoDB for persistence and vector-based caching
 - Icons by [Feather Icons](https://feathericons.com/)
+
