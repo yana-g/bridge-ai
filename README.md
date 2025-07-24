@@ -42,7 +42,7 @@ The system features real-time logging, semantic caching, intent detection, and a
 flowchart TD
     subgraph Clients
         A[User / UI Client]
-        B[TVMANUAL_AGENT (External Agent)]
+        B[TVManualAgent (External Agent)]
     end
 
     subgraph API Layer
@@ -60,8 +60,10 @@ flowchart TD
     A -->|Prompt| C
     B -->|Prompt| C
 
-    F1 & F2 & F3 --> L[MongoDB Logs & Embeddings]
-    G --> L
+    F1 --> L[MongoDB Logs & Embeddings]
+    F2 --> L
+    F3 --> L
+    G  --> L
     H --> M[Client Response]
 ```
 
