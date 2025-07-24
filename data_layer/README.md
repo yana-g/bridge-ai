@@ -38,7 +38,6 @@ flowchart TD
     D4 --> E
 
     style E fill:#f4f4f4,stroke:#999,stroke-width:1px
-
 ```
 
 ## 🔹 Functionality Table
