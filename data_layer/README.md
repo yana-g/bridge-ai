@@ -21,10 +21,10 @@ flowchart TD
     C --> D[MongoDBHandler]
 
     subgraph MongoDBHandler
-        D1[create_user()]
-        D2[verify_user()]
-        D3[store_qa()]
-        D4[semantic_search()]
+        D1[create_user]
+        D2[verify_user]
+        D3[store_qa]
+        D4[semantic_search]
     end
 
     B -->|User Registration / Login| D1
