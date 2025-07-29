@@ -23,7 +23,6 @@ class OutputManager:
         
         # Prepare model metadata
         model_metadata = {
-            'llm_used': response_obj.get('llm_used', 'unknown'),
             'confidence': response_obj.get('confidence'),
             'from_cache': False,  # This is set to False here and can be overridden later
             'is_guest': original_json.get('sender_id', '').startswith('guest_'),
@@ -36,11 +35,17 @@ class OutputManager:
             'reasoning_steps': response_obj.get('reasoning_steps')
         }
         
+        # Add Chain-of-Thought steps if available
+        cot_steps = response_obj.get("cot_steps")
+        if cot_steps:
+            model_metadata["cot"] = " → ".join(cot_steps)
+
         # Get response content, checking both 'response' and 'answer' fields
         response_content = response_obj.get('response') or response_obj.get('answer', '')
         
         output_json = {
             'response': response_content,
+            'llm_used': response_obj.get('llm_used', 'unknown'),
             'vibe_used': original_json.get('vibe', 'general'),  
             'question_id': original_json.get('question_id'),
             'sender_id': original_json.get('sender_id'),
@@ -69,39 +74,56 @@ class OutputManager:
             'final_output': output_json
         }
         
-        # Only store in cache if not already from cache
-        if not response_obj.get('from_cache', False):
+        # Decide whether this should go into the cache
+        llm_used = response_obj.get('llm_used', '')
+        is_external_llm = llm_used not in [
+            'BRIDGE', 'math_evaluator', 'cache_local', 'cache_mongo'
+        ]
+
+        # If this is merely a "follow-up" request (needs_more_info), skip caching entirely
+        if response_obj.get('needs_more_info', False):
+            print("Not storing in cache - follow-up question only")
+
+        # Otherwise, only cache if it’s not already from cache and came from an external LLM
+        elif not response_obj.get('from_cache', False) and is_external_llm:
+            print(f"Storing in cache - LLM used: {llm_used}")
             self.cache_manager.store_response(session_json)
-            
-            # Only save to MongoDB if there is a valid response
-            response_content = response_obj.get('response') or response_obj.get('answer', '')
+
+            # Also save to MongoDB (only non-cache, non-empty answers)
             if response_content:
-                
-                # Save to MongoDB only if not from cache
                 try:
                     user_id = original_json.get('sender_id', 'unknown')
-                    print(" Preparing to save QA record to MongoDB...")
+                    print("Preparing to save QA record to MongoDB...")
                     print(f" user_id: {user_id}")
                     print(f" question: {initial_prompt}")
                     print(f" answer: {response_content}")
-
                     self.db_handler.save_qa_record(
                         user_id=user_id,
                         question=initial_prompt,
                         answer=response_content,
-                            metadata={
-                            "model": response_obj.get('llm_used', 'unknown'),
+                        vibe=original_json.get('vibe', 'general'),
+                        nature_of_answer=original_json.get('response_preference') or original_json.get('nature_of_answer', 'informative'),
+                        metadata={
+                            "model": llm_used,
                             "confidence": response_obj.get('confidence'),
-                            "tokens": response_obj.get('token_count', None),
-                            "embedding": response_obj.get('embedding', None),
-                            "cot_steps": response_obj.get('reasoning_steps', None),
+                            "tokens": response_obj.get('token_count'),
+                            "embedding": response_obj.get('embedding'),
+                            "cot_steps": response_obj.get('cot_steps'),
+                            "model_reasoning_steps": response_obj.get('reasoning_steps'),
                             "vibe": original_json.get('vibe', 'general'),
-                            "question_id": original_json.get('question_id')
+                            "question_id": original_json.get('question_id'),
                         }
                     )
-                    print(" MongoDB save succeeded")
+                    print("MongoDB save succeeded")
                 except Exception as e:
-                    print(f" MongoDB save failed: {e}")
+                    print(f"MongoDB save failed: {e}")
+
+        # ❌ All other cases: don’t store in cache
+        else:
+            if response_obj.get('from_cache', False):
+                print(f"Not storing in cache - already from cache (LLM: {llm_used})")
+            else:
+                print(f"Not storing in cache - internal response (LLM: {llm_used})")
 
         print(f"Final output_json: {output_json}")
         return output_json

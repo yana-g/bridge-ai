@@ -184,7 +184,7 @@ def signup_page():
         email = st.text_input("Email", key="signup_email")
         password = st.text_input("Password", type="password", key="signup_password")
         confirm_password = st.text_input("Confirm Password", type="password", key="signup_confirm_password")
-        
+        user_type = st.selectbox("Select User Type", options=["user", "agent"], key="signup_user_type")
         signup_button = st.form_submit_button("Create Account", type="primary")
         
         if signup_button:
@@ -195,7 +195,7 @@ def signup_page():
             else:
                 # Server-side valid ation and registration
                 with st.spinner("Creating account..."):
-                    success, result = asyncio.run(handle_signup(username, password, email))
+                    success, result = asyncio.run(handle_signup(username, password, email, user_type))
                     if success:
                         st.success("Account created successfully! Please log in.")
                         # Redirect to login page    
@@ -250,7 +250,7 @@ async def handle_login(username: str, password: str) -> tuple[bool, str, dict]:
         logging.error(f"Login error: {str(e)}", exc_info=True)
         return False, f"An error occurred during login: {str(e)}", {}
 
-async def handle_signup(username: str, password: str, email: str = "") -> tuple[bool, str]:
+async def handle_signup(username: str, password: str, email: str = "", user_type: str = "user") -> tuple[bool, str]:
     """
     Handle the user registration process by communicating with the backend API.
     
@@ -279,7 +279,7 @@ async def handle_signup(username: str, password: str, email: str = "") -> tuple[
         # Prepare and send registration request
         response = requests.post(
             f"{API_BASE_URL}/users/register",
-            json={"username": username, "password": password, "email": email}
+            json={"username": username, "password": password, "email": email, "user_type": user_type}
         )
         
         # Handle API response, check for successful registration (HTTP 201 Created)   

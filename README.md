@@ -299,18 +299,23 @@ BRIDGE/
 
 ### Starting the API Server
 ```bash
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn api.entry_point_api:app --reload
 ```
 
 ### Starting the Web UI
 ```bash
-streamlit run bridge_ui/chatUI.py
+streamlit run bridge_ui/loginUI.py
 ```
 
 ### Running the TV Manual Agent
 ```bash
 streamlit run TVManualAgent/main.py
 ```
+
+### Running the Dashboard
+```bash
+streamlit run dashboard_main.py
+``` 
 
 ## 🔍 API Reference
 

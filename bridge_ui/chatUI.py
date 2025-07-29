@@ -219,7 +219,7 @@ def render_chat_messages():
         else:
             # Process AI response message
             model_metadata = message.get("model_metadata", {})
-            model_name = model_metadata.get("llm_used", "Bridge AI").upper()
+            model_name = model_metadata.get("llm_used", "BRIDGE").upper()
             
             # Default to BRIDGE if model is unknown
             if model_name.lower() == "unknown":
@@ -227,17 +227,33 @@ def render_chat_messages():
 
             # Extract confidence score from metadata or response text
             confidence = model_metadata.get("confidence")
-            if confidence is None and "Confidence score:" in message["content"]:
-                try:
-                    # Parse confidence score from response text if not in metadata
-                    confidence_str = message["content"].split("Confidence score:")[1].strip().split()[0].rstrip('., ')
-                    confidence = float(confidence_str)
-                except (IndexError, ValueError):
-                    pass
-
+            content = message["content"]
+            
+            # Check for confidence in response text and clean it up
+            confidence_tags = ["[CONFIDENCE:", "[CONFIDITY:"]
+            for tag in confidence_tags:
+                if tag in content:
+                    try:
+                        # Extract confidence value from the text
+                        confidence_part = content.split(tag)[1].split("]")[0]
+                        confidence = float(confidence_part.strip())
+                        # Remove the confidence part from the content
+                        content = content.split(tag)[0].strip()
+                        break  # Stop after first valid confidence tag is found
+                    except (IndexError, ValueError):
+                        continue
+            
             # Format confidence for display
-            confidence_display = f"Confidence: {int(confidence * 100)}%" if confidence is not None else "N/A"
-            content = format_code_blocks(message["content"])
+            confidence_display = ""
+            if confidence is not None:
+                try:
+                    confidence = float(confidence)
+                    if 0 <= confidence <= 1:
+                        confidence_display = f"• {int(confidence * 100)}%"
+                except (ValueError, TypeError):
+                    pass
+            
+            content = format_code_blocks(content)
             
             # Handle streaming vs. complete messages
             if message.get("is_streaming"):
@@ -247,7 +263,9 @@ def render_chat_messages():
                         <div class="message-header">
                             <div class="model-info">
                                 <span class="model-name">{model_name}</span>
-                                <span class="confidence-score">• {confidence_display}</span>
+                                <span class="confidence-score">{confidence_display}</span>
+                                {f'<span class="vibe-display">• Style: {message.get("vibe")}</span>' if message.get("vibe") else ''}
+                                {f'<span class="nature-display">• Length: {message.get("nature")}</span>' if message.get("nature") else ''}
                             </div>                          
                         </div>
                         <div class="message-content">
@@ -263,7 +281,9 @@ def render_chat_messages():
                         <div class="message-header">
                             <div class="model-info">
                                 <span class="model-name">{model_name}</span>
-                                <span class="confidence-score">• {confidence_display}</span>
+                                <span class="confidence-score">{confidence_display}</span>
+                                {f'<span class="vibe-display">• Style: {message.get("vibe")}</span>' if message.get("vibe") else ''}
+                                {f'<span class="nature-display">• Length: {message.get("nature")}</span>' if message.get("nature") else ''}
                             </div>                          
                         </div>
                         <div class="message-content">{content}</div>
@@ -425,7 +445,7 @@ def chat_page():
                         # print(model_metadata)
                         # print("=== End of Model Metadata ===\n")
                         
-                        model_name = model_metadata.get("llm_used", "Bridge AI").upper()
+                        model_name = model_metadata.get("llm_used", "BRIDGE").upper()
                         if model_name.lower() == "unknown":
                             model_name = "BRIDGE"
                         

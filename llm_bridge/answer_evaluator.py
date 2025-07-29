@@ -49,13 +49,14 @@ class AnswerEvaluator:
         # Quality assessment thresholds
         self.thresholds = {
             'minimum_length': 20,  # words
-            'upgrade_threshold': 0.6,  # quality score below this triggers upgrade
+            'upgrade_threshold': 0.7,  # quality score below this triggers upgrade
             'excellent_threshold': 0.8  # high quality threshold
         }
         
         # Model upgrade capabilities - only models that actually exist
         self.upgradeable_models = {
             'GPT-3.5': True,    # Basic model (LLM2), can upgrade to GPT-4 (LLM3)
+            'gpt-3.5-turbo': True, # Basic model (LLM2), can upgrade to GPT-4 (LLM3)
             'GPT-4': False,     # Advanced model (LLM3), no upgrade needed
             'cache': False,     # Cache response, no upgrade possible
             'BRIDGE': False     # Bridge direct response, no upgrade needed
@@ -65,7 +66,7 @@ class AnswerEvaluator:
         """Comprehensive answer evaluation with detailed scoring"""
         
         answer = response_obj.get('answer', '')
-        llm_used = response_obj.get('llm_used', 'unknown')
+        llm_used = response_obj.get('llm_used') or response_obj.get('model_metadata', {}).get('llm_used', 'unknown')
         
         # Calculate quality components
         quality_components = self._calculate_quality_components(answer, original_prompt)
@@ -214,7 +215,15 @@ class AnswerEvaluator:
 
     def _can_upgrade(self, llm_used):
         """Check if model can be upgraded"""
-        return self.upgradeable_models.get(llm_used, False)
+        """Check if model can be upgraded – using relaxed name matching"""
+        if not llm_used:
+            return False
+
+        normalized = llm_used.lower().strip()
+
+        # Accept variations like gpt-3.5-turbo, gpt-3.5-turbo-0613, openai-gpt, etc.
+        upgrade_keywords = ['gpt-3.5', '3.5', 'turbo', 'openai-3.5', 'openai-gpt']
+        return any(keyword in normalized for keyword in upgrade_keywords)
 
     def get_evaluation_details(self, response_obj, original_prompt):
         """Get detailed evaluation breakdown for debugging"""
@@ -229,7 +238,7 @@ class AnswerEvaluator:
             'quality_components': quality_components,
             'overall_quality': evaluation['quality'],
             'meets_upgrade_threshold': evaluation['quality'] >= self.thresholds['upgrade_threshold'],
-            'can_upgrade': self._can_upgrade(response_obj.get('llm_used', 'unknown')),
+            'can_upgrade': self._can_upgrade(response_obj.get('llm_used') or response_obj.get('model_metadata', {}).get('llm_used', 'unknown')),
             'recommendation': 'upgrade' if evaluation['needs_upgrade'] else 'keep'
         }
         

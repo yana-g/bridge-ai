@@ -145,7 +145,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any
         logger.error(f"Error getting current user: {e}")
         raise credentials_exception
 
-async def create_user(username: str, email: str, password: str) -> Dict[str, Any]:
+async def create_user(username: str, email: str, password: str, user_type: str = "user") -> Dict[str, Any]:
     """
     Create a new user account.
     
@@ -159,8 +159,9 @@ async def create_user(username: str, email: str, password: str) -> Dict[str, Any
         username (str): Unique username for the new account
         email (str): User's email address
         password (str): Plain text password (will be hashed)
+        user_type (str): Type of user (default: "user")
         
-    Returns:
+    Returns:    
         Dict[str, Any]: Dictionary containing:
             - success (bool): Whether the operation was successful
             - user (dict, optional): User data if successful
@@ -173,7 +174,7 @@ async def create_user(username: str, email: str, password: str) -> Dict[str, Any
     """
     try:
         # Use the MongoDBHandler's create_user method
-        user = db_handler.create_user(username, email, password)
+        user = db_handler.create_user(username, email, password, user_type)
         
         return {
             "success": True,
@@ -182,7 +183,8 @@ async def create_user(username: str, email: str, password: str) -> Dict[str, Any
                 "username": user.get("username"),
                 "email": user.get("email"),
                 "api_key": user.get("api_key"),
-                "created_at": user.get("created_at")
+                "user_type": user.get("user_type"),
+                "created_at": user.get("created_at")    
             }
         }
         

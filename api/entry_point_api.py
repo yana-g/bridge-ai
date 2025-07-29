@@ -73,6 +73,7 @@ from api.middleware.validation import setup_validation_middleware
 from llm_bridge.bridge import LLMBridge
 from api.authHandler import APIKeyAuth, verify_api_key
 from api.userHandler import create_user, get_user, verify_user, rotate_api_key
+from llm_bridge.cache_manager import LocalCacheManager
 
 # Get configuration
 config = get_config()
@@ -86,6 +87,19 @@ app = FastAPI(
 
 # Initialize LLM Bridge
 llm_bridge = LLMBridge(config=config)
+
+# Initialize cache manager
+cache_manager = LocalCacheManager()
+
+@app.on_event("startup")
+def clear_cache_on_startup():
+    # Enable cache clearing on startup via environment variable
+    if os.getenv("CLEAR_CACHE_ON_STARTUP", "false").lower() == "true":
+        success = cache_manager.clear_cache()
+        if success:
+            logging.info("✅ Cache cleared on API startup")
+        else:
+            logging.warning("❌ Failed to clear cache on API startup")
 
 # Add middleware
 setup_validation_middleware(app)
@@ -331,6 +345,7 @@ class UserCreate(BaseModel):
     username: str
     password: str
     email: Optional[str] = None
+    user_type: Optional[str] = "user"
 
 class UserResponse(BaseModel):
     """Model for user response."""
@@ -367,7 +382,8 @@ async def register_user(user_data: UserCreate):
         result = await create_user(
             username=user_data.username,
             password=user_data.password,
-            email=user_data.email
+            email=user_data.email,
+            user_type=user_data.user_type
         )
         
         if not result or not isinstance(result, dict) or not result.get('success', False):

@@ -343,7 +343,8 @@ class MongoDBHandler:
             return False
     
     # QA Records methods
-    def save_qa_record(self, user_id: str, question: str, answer: str, metadata: Optional[Dict] = None) -> str:
+    def save_qa_record(self, user_id: str, question: str, answer: str, metadata: Optional[Dict] = None, 
+                   vibe: Optional[str] = None, nature_of_answer: Optional[str] = None) -> str:
         """  
         Save a QA record to the database.
         
@@ -385,6 +386,8 @@ class MongoDBHandler:
                 'user_id': user_id,
                 'question': question,
                 'answer': answer,
+                'vibe': vibe,
+                'nature_of_answer': nature_of_answer,
                 'metadata': metadata or {},
                 'timestamp': datetime.datetime.utcnow(),
                 'version': '2.1'
@@ -441,38 +444,56 @@ class MongoDBHandler:
             logger.error(f"❌ Error getting QA history: {e}")
             raise
 
-    def find_by_prompt(self, prompt_text):
-        """Find a QA record by exact prompt match"""
+    def find_by_prompt(self, prompt_text, vibe=None, nature_of_answer=None):
+        """Find a QA record by exact prompt match with optional vibe and nature_of_answer filters"""
         try:
             if self.qa_records is None:  # Proper None check for collection
                 return None
-                
-            result = self.qa_records.find_one({
+        
+            # Build query conditions
+            query_conditions = {
                 "$or": [
                     {"question": prompt_text},
                     {"metadata.question": prompt_text}
                 ]
-            })
-            
+            }
+        
+            # Add vibe filter if provided
+            if vibe is not None:
+                query_conditions["vibe"] = vibe
+        
+            # Add nature_of_answer filter if provided  
+            if nature_of_answer is not None:
+                query_conditions["nature_of_answer"] = nature_of_answer
+        
+            print(f"🔍 [MongoDB] Searching with query: {query_conditions}")
+        
+            result = self.qa_records.find_one(query_conditions)
+        
             if result and '_id' in result:
                 result['_id'] = str(result['_id'])
+                print(f"✅ [MongoDB] Exact match found with vibe='{vibe}' and nature_of_answer='{nature_of_answer}'")
                 return result
+        
+            print(f"❌ [MongoDB] No exact match found with the specified parameters")
             return None
-            
+        
         except Exception as e:
             print(f"❌ [MongoDB] Error finding prompt: {e}")
             import traceback
             traceback.print_exc()
             return None
 
-    def semantic_search_by_prompt(self, query, threshold=0.85, top_k=1):
+    def semantic_search_by_prompt(self, query, vibe=None, nature_of_answer=None, threshold=0.85, top_k=1):
         """
         Perform semantic search on the QA records collection.
         
         Args:
             query: The query to search for
-            threshold: The minimum similarity threshold
+            threshold: The minimum similarity threshold for semantic search
             top_k: The number of top results to return
+            vibe: The vibe to filter by
+            nature_of_answer: The nature_of_answer to filter by
         
         Returns:
             List[Dict]: A list of QA records matching the query
@@ -481,8 +502,22 @@ class MongoDBHandler:
         try:
             query_embedding = self.embedding_model.encode(query).reshape(1, -1)
 
-            # Fetch all records with non-null embeddings
-            records = list(self.qa_records.find({"embedding": {"$ne": None}}))
+            # Build MongoDB filter
+            mongo_filter = {"embedding": {"$ne": None}}
+        
+            # Add vibe filter if provided
+            if vibe is not None:
+                mongo_filter["vibe"] = vibe
+        
+            # Add nature_of_answer filter if provided
+            if nature_of_answer is not None:
+                mongo_filter["nature_of_answer"] = nature_of_answer
+        
+            print(f"🔍 [MongoDB] Semantic search filter: {mongo_filter}")
+
+            # Fetch filtered records with non-null embeddings
+            records = list(self.qa_records.find(mongo_filter))
+            print(f"📊 [MongoDB] Found {len(records)} records matching filters")
 
             similarities = []
             for rec in records:
@@ -501,14 +536,17 @@ class MongoDBHandler:
         except Exception as e:
             print(f"❌ Error in semantic_search_by_prompt: {str(e)}")
             return []
+
     
-    def search(self, prompt, threshold=0.85):
+    def search(self, prompt, vibe=None, nature_of_answer=None, threshold=0.85):
         """
         Perform a search on the QA records collection.
         
         Args:
             prompt: The prompt to search for
             threshold: The minimum similarity threshold for semantic search
+            vibe: The vibe to filter by
+            nature_of_answer: The nature_of_answer to filter by
         
         Returns:
             Tuple[Dict, str, float]: A tuple containing:
@@ -520,20 +558,26 @@ class MongoDBHandler:
         print(f"🔎 Searching MongoDB for: {prompt[:50]}...")
 
         # Try exact match first
-        exact_match = self.find_by_prompt(prompt)
+        exact_match = self.find_by_prompt(prompt, vibe=vibe, nature_of_answer=nature_of_answer)
         if exact_match:
             print("✅ Exact match found in MongoDB")
             return exact_match, 'exact', 1.0
 
         # Fallback to semantic search
-        semantic_results = self.semantic_search_by_prompt(prompt, threshold=threshold)
+        semantic_results = self.semantic_search_by_prompt(
+            prompt, 
+            vibe=vibe, 
+            nature_of_answer=nature_of_answer, 
+            threshold=threshold
+        )
+    
         if semantic_results:
             best_match = semantic_results[0]
             # Get the similarity score from the semantic search
             query_embedding = self.embedding_model.encode(prompt).reshape(1, -1)
             result_embedding = np.array(best_match.get('embedding', [])).reshape(1, -1)
             similarity = float(cosine_similarity(query_embedding, result_embedding)[0][0])
-            
+        
             print(f"✅ Semantic match found in MongoDB (similarity: {similarity:.2f})")
             return best_match, 'semantic', similarity
 

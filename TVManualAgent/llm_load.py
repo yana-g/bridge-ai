@@ -233,25 +233,54 @@ class LlamaModel:
         """Generate response using the loaded model"""
         if not self.pipeline:
             return "Model not loaded. Please load the model first."
-            
+        
         try:
+            # Truncate the prompt to fit within model limits
+            max_tokens_for_prompt = getattr(self, 'max_input_tokens', 512) - 50  # Leave room for formatting
+        
+            # Simple truncation if no tokenizer available
+            if not self.tokenizer:
+                max_chars = max_tokens_for_prompt * 4  # Rough estimate
+                truncated_prompt = prompt[:max_chars] if len(prompt) > max_chars else prompt
+            else:
+                # Use tokenizer for accurate truncation
+                tokens = self.tokenizer.encode(prompt, truncation=False)
+                if len(tokens) <= max_tokens_for_prompt:
+                    truncated_prompt = prompt
+                else:
+                    truncated_tokens = tokens[:max_tokens_for_prompt]
+                    truncated_prompt = self.tokenizer.decode(truncated_tokens, skip_special_tokens=True)
+        
             # Different prompt formatting based on model type
-            if "llama" in self.model_name.lower():
+            if self.model_name and "llama" in self.model_name.lower():
                 # Llama-2 chat format
-                formatted_prompt = f"<s>[INST] {prompt} [/INST]"
+                formatted_prompt = f"<s>[INST] {truncated_prompt} [/INST]"
                 max_new_tokens = 150
-            elif "dialogpt" in self.model_name.lower():
+            elif self.model_name and "dialogpt" in self.model_name.lower():
                 # DialoGPT format
-                formatted_prompt = f"User: {prompt}\nBot:"
+                formatted_prompt = f"User: {truncated_prompt}\nBot:"
                 max_new_tokens = 100
             else:
                 # Standard GPT format
-                formatted_prompt = f"Question: {prompt}\nAnswer:"
+                formatted_prompt = f"Question: {truncated_prompt}\nAnswer:"
                 max_new_tokens = 100
-            
+        
+            # Final check: ensure formatted prompt isn't too long
+            max_final_tokens = getattr(self, 'max_input_tokens', 512)
+            if not self.tokenizer:
+                max_chars = max_final_tokens * 4
+                final_prompt = formatted_prompt[:max_chars] if len(formatted_prompt) > max_chars else formatted_prompt
+            else:
+                tokens = self.tokenizer.encode(formatted_prompt, truncation=False)
+                if len(tokens) <= max_final_tokens:
+                    final_prompt = formatted_prompt
+                else:
+                    truncated_tokens = tokens[:max_final_tokens]
+                    final_prompt = self.tokenizer.decode(truncated_tokens, skip_special_tokens=True)
+        
             # Generate response
             response = self.pipeline(
-                formatted_prompt,
+                final_prompt,
                 max_new_tokens=max_new_tokens,
                 num_return_sequences=1,
                 pad_token_id=self.tokenizer.eos_token_id,
@@ -259,35 +288,40 @@ class LlamaModel:
                 temperature=0.7,
                 top_p=0.9
             )
-            
-            # Extract generated text
-            if not response or 'generated_text' not in response[0]:
+        
+            # Check if response exists and is valid - SEPARATED CHECKS
+            if not response or len(response) == 0:
                 return "Error: No response from model"
-
-                generated_text = response[0]['generated_text']
-
             
+            if 'generated_text' not in response[0]:
+                return "Error: Invalid response format from model"
+        
+            generated_text = response[0]['generated_text']
+            if not generated_text:
+                return "Error: Model generated empty text"
+        
             # Clean up the response based on model type
-            if "llama" in self.model_name.lower():
+            if self.model_name and "llama" in self.model_name.lower():
                 if "[/INST]" in generated_text:
                     answer = generated_text.split("[/INST]")[-1].strip()
                 else:
-                    answer = generated_text[len(formatted_prompt):].strip()
-            elif "dialogpt" in self.model_name.lower():
+                    answer = generated_text[len(final_prompt):].strip()
+            elif self.model_name and "dialogpt" in self.model_name.lower():
                 if "Bot:" in generated_text:
                     answer = generated_text.split("Bot:")[-1].strip()
                 else:
-                    answer = generated_text[len(formatted_prompt):].strip()
+                    answer = generated_text[len(final_prompt):].strip()
             else:
                 if "Answer:" in generated_text:
                     answer = generated_text.split("Answer:")[-1].strip()
                 else:
-                    answer = generated_text[len(formatted_prompt):].strip()
-            
+                    answer = generated_text[len(final_prompt):].strip()
+        
             # Clean up the answer
-            answer = answer.split('\n')[0].strip()  # Take first line
-            
-            return answer if answer else "I didn't find"
-            
+            if answer:
+                answer = answer.split('\n')[0].strip()  # Take first line only
+        
+            return answer if answer else "I couldn't generate a proper response"
+        
         except Exception as e:
             return f"Error generating response: {str(e)}"

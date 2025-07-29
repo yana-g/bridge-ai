@@ -276,7 +276,7 @@ class PDFProcessor:
             for i, idx in enumerate(indices[0]):
                 if 0 <= idx < len(self.documents):
                     score = float(distances[0][i])
-                    if score <= 1.61:  # Threshold for good matches
+                    if score <= 1:  # Threshold for good matches
                         doc = self.documents[idx].copy()
                         doc['similarity_score'] = score
                         relevant_docs.append(doc)

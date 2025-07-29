@@ -248,6 +248,55 @@ def main():
                     })
                 
                 return
+
+            # Check if similarity scores are too low (indicating poor matches)
+            if all(doc['similarity_score'] <= 0.6 for doc in relevant_docs):
+                st.warning("🔍 TV manual information has low relevance. Asking LLM Bridge...")
+                
+                try:
+                    # Get response from BRIDGE API
+                    response = st.session_state.api_client.ask_bridge(prompt)
+                    print("DEBUG: Bridge API response:", response)
+
+                    if response.get("success", True):
+                        # Store the full response in the message
+                        message_content = {
+                            "response": response.get("response", "No response received."),
+                            "follow_up_questions": response.get("follow_up_questions", [])
+                        }
+                        
+                        # Display the main response
+                        st.subheader("Answer from LLM Bridge:")
+                        main_answer = message_content["response"]
+                        follow_ups = message_content["follow_up_questions"]
+                        if follow_ups:
+                            followup_md = "\n\n**To help me provide a better answer, could you clarify:**\n" + "\n".join([f"- {q}" for q in follow_ups])
+                            main_answer += followup_md
+                        st.markdown(main_answer)
+                        
+                        # Store the structured response in chat history
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": message_content
+                        })
+                        
+                    else:
+                        error_msg = f"Error: {response.get('error', 'Unknown error')}"
+                        st.error(error_msg)
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": error_msg
+                        })
+                        
+                except Exception as e:
+                    error_msg = f"An error occurred: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": error_msg
+                    })
+                
+                return
             
             # Prepare context for LLM
             context = "\n\n".join([doc['text'] for doc in relevant_docs])
@@ -328,6 +377,6 @@ Answer:"""
                         st.write(f"**Similarity Score:** {doc['similarity_score']:.4f}")
                         st.write(f"**Text:** {doc['text'][:300]}...")
                         st.divider()
-                
+
 if __name__ == "__main__":
-    main()
+    main()                       

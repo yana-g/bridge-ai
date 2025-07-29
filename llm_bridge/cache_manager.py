@@ -91,7 +91,7 @@ class LocalCacheManager:
             return False, "Prompt is too long"
         return True, ""
     
-    def exact_match_search(self, prompt: str) -> Tuple[Optional[Dict], bool, float]:
+    def exact_match_search(self, prompt: str, vibe: str = None, nature_of_answer: str = None) -> Tuple[Optional[Dict], bool, float]:
         """
         Search for an exact match of the prompt in the cache
         
@@ -110,15 +110,31 @@ class LocalCacheManager:
             if DEV_MODE:
                 print(f"⚠️ Invalid prompt in exact_match_search: {error}")
             return None, False, 0.0
-            
+        
         try:
-            if prompt in self.index['prompts']:
+            # Create composite cache key for search
+            search_key = self._create_cache_key(prompt, vibe, nature_of_answer)
+        
+            if search_key in self.index['prompts']:
                 self.stats['hits'] += 1
-                idx = self.index['prompts'].index(prompt)
+                idx = self.index['prompts'].index(search_key)
                 with open(self.index['file_paths'][idx], 'r', encoding='utf-8') as f:
-                    return json.load(f), True, 1.0
+                    cached_data = json.load(f)
+                
+                    # Check TTL if enabled
+                    if self._is_expired(cached_data):
+                        if DEV_MODE:
+                            print(f"⚠️ Cache entry expired: {search_key[:50]}...")
+                        self._remove_from_cache(self.index['file_paths'][idx], idx)
+                        self.stats['misses'] += 1
+                        self.stats['hits'] -= 1  # Adjust stats
+                        return None, False, 0.0
+                    
+                    return cached_data, True, 1.0
+                
             self.stats['misses'] += 1
             return None, False, 0.0
+        
         except Exception as e:
             self.stats['errors'] += 1
             if DEV_MODE:
@@ -238,50 +254,59 @@ class LocalCacheManager:
             if DEV_MODE:
                 print("❌ Cache: Missing 'initial_prompt' in session data")
             return False
-            
-        prompt = session_json['initial_prompt']
         
+        prompt = session_json['initial_prompt']
+        vibe = session_json.get('vibe')
+        nature_of_answer = session_json.get('nature_of_answer') or session_json.get('response_preference')
+    
         try:
             # Save locally only in DEV_MODE
             if DEV_MODE:
                 # Ensure the cache directory exists
                 os.makedirs(self.cache_dir, exist_ok=True)
                 
-                # Use the sanitized filename
-                filename = self._sanitize_filename(prompt)
+                # Create composite cache key
+                cache_key = self._create_cache_key(prompt, vibe, nature_of_answer)
+            
+                # Use the sanitized filename based on cache key
+                filename = self._sanitize_filename(cache_key)
                 file_path = os.path.join(self.cache_dir, filename)
-                
+            
                 # Ensure the response is JSON serializable
-                try:
-                    json.dumps(session_json)  # Test serialization
-                except (TypeError, OverflowError) as e:
-                    print(f"❌ Cache: Non-serializable data in session: {e}")
-                    # Try to make it serializable by removing non-serializable fields
-                    if 'final_output' in session_json and 'model_metadata' in session_json['final_output']:
-                        if 'embedding' in session_json['final_output']['model_metadata']:
-                            session_json['final_output']['model_metadata']['embedding'] = "[embedding removed]"
-                    session_json['final_output'] = str(session_json.get('final_output', {}))
-                
-                # Store the session data locally
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(session_json, f, ensure_ascii=False, indent=2)
-                
-                # Get and store the embedding
-                try:
-                    if self.embedding_model:
-                        embedding = self.embedding_model.encode(prompt)
-                        self.index['prompts'].append(prompt)
-                        self.index['embeddings'].append(embedding.tolist())
-                        self.index['file_paths'].append(file_path)
-                        
-                        # Save the updated index
-                        self.save_index()
-                        
-                    if DEV_MODE:
-                        print(f"✅ Cached locally: {prompt[:50]}...")
+            try:
+                json.dumps(session_json)  # Test serialization
+            except (TypeError, OverflowError) as e:
+                print(f"❌ Cache: Non-serializable data in session: {e}")
+                # Try to make it serializable by removing non-serializable fields
+                if 'final_output' in session_json and 'model_metadata' in session_json['final_output']:
+                    if 'embedding' in session_json['final_output']['model_metadata']:
+                        session_json['final_output']['model_metadata']['embedding'] = "[embedding removed]"
+                session_json['final_output'] = str(session_json.get('final_output', {}))
+            
+            # Ensure searchable fields are present at top-level
+            session_json['vibe'] = vibe
+            session_json['nature_of_answer'] = nature_of_answer
+
+            # Store the session data locally
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(session_json, f, ensure_ascii=False, indent=2)
+            
+            # Get and store the embedding using ONLY the prompt (not the composite key)
+            try:
+                if self.embedding_model:
+                    embedding = self.embedding_model.encode(prompt)  # רק prompt לembedding
+                    self.index['prompts'].append(cache_key)  # אבל composite key ב-index
+                    self.index['embeddings'].append(embedding.tolist())
+                    self.index['file_paths'].append(file_path)
                     
-                except Exception as e:
-                    print(f"❌ Cache: Failed to update local index: {str(e)}")
+                    # Save the updated index
+                    self.save_index()
+                    
+                if DEV_MODE:
+                    print(f"✅ Cached with key: {cache_key[:100]}...")
+                
+            except Exception as e:
+                print(f"❌ Cache: Failed to update local index: {str(e)}")
 
         except Exception as e:
             print(f"❌ Cache: Error in store_response: {str(e)}")
@@ -289,7 +314,7 @@ class LocalCacheManager:
                 import traceback
                 traceback.print_exc()
             return False
-        
+    
         return True
     
     def _sanitize_filename(self, prompt: str) -> str:
@@ -300,14 +325,37 @@ class LocalCacheManager:
         # Trim to 50 chars and add hash for uniqueness
         return f"{safe_prompt[:50]}__{abs(hash(prompt)) % 10000}.json"
 
-    def semantic_search(self, prompt: str, threshold: float = 0.85) -> Tuple[Optional[Dict], bool, float]:
+    def _create_cache_key(self, prompt: str, vibe: Optional[str] = None, nature_of_answer: Optional[str] = None) -> str:
         """
-        Search for semantically similar prompts in the cache
+        Create a composite cache key that includes prompt, vibe, and nature_of_answer
+        
+        Args:
+            prompt: The user's prompt
+            vibe: Optional vibe parameter
+            nature_of_answer: Optional nature of answer parameter
+        
+        Returns:
+            str: A composite cache key
+        """
+        # Create a composite key that includes all parameters
+        key_components = [prompt]
+        if vibe:
+            key_components.append(f"vibe:{vibe}")
+        if nature_of_answer:
+            key_components.append(f"nature:{nature_of_answer}")
+    
+        return "||".join(key_components)
+    
+    def semantic_search(self, prompt: str, vibe: str = None, nature_of_answer: str = None, threshold: float = 0.85) -> Tuple[Optional[Dict], bool, float]:
+        """
+        Search for semantically similar prompts in the cache with vibe and nature_of_answer filtering
         
         Args:
             prompt: The prompt to search for
+            vibe: Optional vibe parameter
+            nature_of_answer: Optional nature of answer parameter
             threshold: Minimum similarity score (0-1) to consider a match
-            
+        
         Returns:
             Tuple of (cached_response, found, similarity) where:
             - cached_response: The best matching cached response if found, else None
@@ -320,46 +368,81 @@ class LocalCacheManager:
             if DEV_MODE:
                 print(f"⚠️ Invalid prompt in semantic_search: {error}")
             return None, False, 0.0
-            
+        
         try:
             if not self.index['prompts']:
                 self.stats['misses'] += 1
                 return None, False, 0.0
                 
-            # Generate query embedding
+            # Generate query embedding (only for the prompt, not composite key)
             query_embedding = self.embedding_model.encode(prompt).reshape(1, -1)
             embeddings = np.array(self.index['embeddings'])
-            
+
             if len(embeddings) == 0:
                 self.stats['misses'] += 1
-                return None, False, 0.0
-                
-            # Calculate similarities
-            similarities = cosine_similarity(embeddings, query_embedding)
-            max_idx = np.argmax(similarities)
-            max_similarity = float(similarities[max_idx][0])
+                return None, False, 0.0 
+        
+            # Filter cache keys that match vibe and nature_of_answer BEFORE similarity calculation
+            valid_indices = []
+            for idx, cache_key in enumerate(self.index['prompts']):
+                # Parse composite key to check vibe and nature
+                key_parts = cache_key.split("||")
+                cached_prompt = key_parts[0]
             
+                # Extract vibe and nature from key
+                cached_vibe = None
+                cached_nature = None
+                for part in key_parts[1:]:
+                    if part.startswith("vibe:"):
+                        cached_vibe = part[5:]  # Remove "vibe:" prefix
+                    elif part.startswith("nature:"):
+                        cached_nature = part[7:]  # Remove "nature:" prefix
+            
+                # Check if vibe matches (if provided)
+                if vibe is not None and cached_vibe != vibe:
+                    continue
+                
+                # Check if nature_of_answer matches (if provided)
+                if nature_of_answer is not None and cached_nature != nature_of_answer:
+                    continue
+                
+                valid_indices.append(idx)
+        
+            if not valid_indices:
+                self.stats['misses'] += 1
+                return None, False, 0.0
+        
+            # Calculate similarities only for valid indices
+            valid_embeddings = embeddings[valid_indices]
+            similarities = cosine_similarity(valid_embeddings, query_embedding)
+        
+            # Find best match
+            max_idx_in_valid = np.argmax(similarities)
+            max_similarity = float(similarities[max_idx_in_valid][0])
+        
             # Check if the best match meets the threshold
             if max_similarity >= threshold:
                 self.stats['hits'] += 1
-                file_path = self.index['file_paths'][max_idx]
+                original_idx = valid_indices[max_idx_in_valid]
+                file_path = self.index['file_paths'][original_idx]
+            
                 with open(file_path, 'r', encoding='utf-8') as f:
                     cached_data = json.load(f)
+                
+                # Check TTL if enabled
+                if self._is_expired(cached_data):
+                    if DEV_MODE:
+                        print(f"⚠️ Cache entry expired: {prompt[:50]}...")
+                    self._remove_from_cache(file_path, original_idx)
+                    self.stats['misses'] += 1
+                    self.stats['hits'] -= 1  # Adjust stats
+                    return None, False, 0.0
                     
-                    # Check TTL if enabled
-                    if self._is_expired(cached_data):
-                        if DEV_MODE:
-                            print(f"⚠️ Cache entry expired: {prompt[:50]}...")
-                        self._remove_from_cache(file_path, max_idx)
-                        self.stats['misses'] += 1
-                        self.stats['hits'] -= 1  # Adjust stats
-                        return None, False, 0.0
-                        
-                    return cached_data, True, max_similarity
-                    
+                return cached_data, True, max_similarity
+                
             self.stats['misses'] += 1
             return None, False, 0.0
-            
+        
         except Exception as e:
             self.stats['errors'] += 1
             if DEV_MODE:
@@ -367,7 +450,7 @@ class LocalCacheManager:
                 import traceback
                 traceback.print_exc()
             return None, False, 0.0
-    
+
     def _is_expired(self, cached_data: Dict) -> bool:
         """Check if a cached item has expired based on its TTL"""
         if 'expires_at' not in cached_data.get('metadata', {}):
@@ -397,15 +480,17 @@ class LocalCacheManager:
             if DEV_MODE:
                 print(f"⚠️ Failed to remove cache entry: {e}")
 
-    def search(self, prompt, threshold=0.85):
+    def search(self, prompt, vibe=None, nature_of_answer=None, threshold=0.85):
         """
         Search for a prompt in the cache, trying exact match first, then semantic search,
         and finally falling back to MongoDB if available.
         
         Args:
             prompt: The prompt to search for
+            vibe: Optional vibe parameter
+            nature_of_answer: Optional nature of answer parameter
             threshold: Minimum similarity score for semantic search (0-1)
-            
+        
         Returns:
             Tuple containing:
                 - The cached response if found, else None
@@ -414,26 +499,32 @@ class LocalCacheManager:
         """
         if not prompt or not isinstance(prompt, str):
             return None, 'not_found', 0.0
-            
-        # Try exact match first
-        result, found, similarity = self.exact_match_search(prompt)
+
+        # --- Exact Match ---
+        result, found, similarity = self.exact_match_search(prompt, vibe=vibe, nature_of_answer=nature_of_answer)
         if found:
             if DEV_MODE:
                 print(f"🔍 Exact match found in local cache")
             return result, 'exact', similarity
-            
-        # Fall back to semantic search
-        result, found, similarity = self.semantic_search(prompt, threshold)
+
+        # --- Semantic Match ---
+        result, found, similarity = self.semantic_search(prompt, vibe=vibe, nature_of_answer=nature_of_answer, threshold=threshold)
         if found:
             if DEV_MODE:
                 print(f"🔍 Semantic match found in local cache (similarity: {similarity:.2f})")
             return result, 'semantic', similarity
-            
-        # Fall back to MongoDB if available
+
+        # --- MongoDB Fallback ---
         if hasattr(self, 'mongo_handler') and self.mongo_handler:
             try:
-                # MongoDB search returns (result, match_type, similarity)
-                mongo_result, match_type, similarity = self.mongo_handler.search(prompt, threshold)
+                # 🔧 FIX: Pass vibe and nature_of_answer to MongoDB search
+                mongo_result, match_type, similarity = self.mongo_handler.search(
+                    prompt, 
+                    vibe=vibe, 
+                    nature_of_answer=nature_of_answer, 
+                    threshold=threshold
+                )
+            
                 if mongo_result:
                     self.stats['mongo_hits'] += 1
                     if DEV_MODE:
@@ -443,13 +534,14 @@ class LocalCacheManager:
                     self.stats['mongo_misses'] += 1
                     if DEV_MODE:
                         print("❌ No match found in MongoDB")
+                    
             except Exception as e:
                 self.stats['errors'] += 1
                 if DEV_MODE:
                     print(f"⚠️ MongoDB search failed: {e}")
                     import traceback
                     traceback.print_exc()
-        
+
         return None, 'not_found', 0.0
 
     def get_embedding(self, prompt):
